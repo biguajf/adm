@@ -2,4 +2,4 @@ django
 gunicorn
 django-heroku
 mongoengine
-django_mongoengine
+django_mongodb_engine
