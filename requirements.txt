@@ -1,5 +1,11 @@
-django
-gunicorn
-django-heroku
-mongoengine
-django_mongodb_engine
+certifi==2018.11.29
+Django==2.1.2
+django-mongoengine==0.3
+gunicorn==19.9.0
+mongoengine==0.15.3
+pipenv==2018.11.26
+pymongo==3.7.1
+pytz==2018.5
+six==1.11.0
+virtualenv==16.1.0
+virtualenv-clone==0.4.0
