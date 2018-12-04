@@ -13,7 +13,6 @@
     $.ajax({
       data: {
         filtro : $('#id_get_entidade_funcionarios').val(),
-        empresa : '{{empresaUsuario.id}}'
       },
       type: 'GET',
       url:'/cadastros/funcionarios/buscar/'
