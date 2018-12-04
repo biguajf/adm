@@ -1,0 +1,496 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Projects {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+<!--
+
+-->
+<script>
+
+function buscarCompra(){
+  $.ajax({
+    data: {
+      filtro : $('#id_get_compra').val(),
+    },
+    type: 'GET',
+    url:'/buscar/compra/'
+  }).success(function(data){
+    var texto_html = '';
+    for (i in data) { 
+        var n = parseInt(i) + 1;
+        texto_html = texto_html + '<tr>';
+          texto_html = texto_html + '<th scope="row">'+n+'</th>';
+          texto_html = texto_html + '<td>'+ moment(data[i].data_cadastro['$date']).format('DD/MM/YYYY')+'</td>';
+          texto_html = texto_html + '<td>'+ data[i].fornecedor +'</td>';
+          texto_html = texto_html + '<td>'+data[i].total+'</td>';
+          texto_html = texto_html + '<td>';
+          var parametro_edit = "'editarCompra("+ JSON.stringify(data[i])+")'";
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
+            texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirCompra("'+ data[i]._id['$oid'] +'")></i>';
+          texto_html = texto_html + '</td>';
+        texto_html = texto_html + '</tr>';
+    }  
+    $('#id_itens_compras').html(texto_html);
+  }).fail(function(data){
+      alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
+  });
+}
+
+function adicionarCompra(){
+  $('#spinner_modal').modal('show');
+  if ($("#compra_id_total").val() == ''){
+    alertar('ATENÇÂO','Insira os produtos comprados','red', 'glyphicon glyphicon-alert');
+  }else{
+    i = 0;
+    produto_array = '['
+    produtos_selecionados = $('#compra_id_body_produtos >tr');
+    produtos_selecionados.each(function(){
+      produto_array = produto_array + '{';
+      produto_array = produto_array + '"produto":"'+$('#body_id_produto_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"quantidade":"'+$('#body_id_quantidade_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"unidade":"'+$('#body_id_unidade_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"preco_unitario":"'+$('#body_id_preco_unitario'+i).attr("valor")+'",';
+      produto_array = produto_array + '"preco_total":"'+$('#body_id_preco_total'+i).attr("valor")+'"';
+      produto_array = produto_array + '}';
+      if(i < $('#compra_id_body_produtos >tr').length-1){
+        produto_array = produto_array + ','
+      }
+      i++
+    });
+    produto_array = produto_array + ']';
+    $.ajax({
+      data: {
+        id  : $("#id_Compra").val(),
+        fornecedor : $("#produto_fornecedor").val(),
+        total      : $("#compra_id_total").val(),
+        produtos   : produto_array
+      },
+      type: 'POST',
+      url:'/adicionar/compra/'
+      }).success(function(data){
+        $('#spinner_modal').modal('hide');
+        alertar('Sucesso','Compra cadastrada com sucesso','green','fa fa-sucess');
+        $("#cliente_btn_ok").click();
+        mostraGradeCompra();
+      }).fail(function(data){
+        $('#spinner_modal').modal('hide');
+        alertar('Atenção','Não foi possível salvar o registro </br> Tente novamente mais tarde','red','fa fa-warning');
+    });
+  }
+  return 1;
+}
+
+function excluirCompra(id){
+  confirmar('Atenção',
+            'Deseja excluir esta compra?',
+            'red',
+            'fa fa-warning',
+            function(){
+              $('#spinner_modal').modal('show');
+              var self = this;
+              self.close();
+             return $.ajax({
+                    data: {
+                        id : id,
+                      },
+                    type: 'POST',
+                    url:'/excluir/compra/'
+                    }).success(function(data){
+                      $('#spinner_modal').modal('hide');
+                      $("#cliente_btn_ok").click();
+                    }).fail(function(data){
+                        $('#spinner_modal').modal('hide');
+                        alertar('Atenção','Não foi possível excluir este usuario </br> Tente novamente mais tarde','red','fa fa-warning');
+                    });
+                  }
+  )
+}
+
+function editarCompra(data){
+  $('#id_Compra').val(data._id['$oid']);
+  $('#cliente_id_data_cadastro').val(moment(data.data_cadastro['$date']).format('DD/MM/YYYY'))
+  $('#produto_fornecedor').val(data.fornecedor_id).trigger('change');
+  var txt = '';
+  var n = 1;
+  for (i in data.produtos){
+    txt = '<tr>';
+    txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+    txt = txt + '<td id="body_id_produto_'+n+'" valor="'+data.produtos[i].produto+'">'+ data.produtos[i].produto +'</td>';
+    txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+data.produtos[i].quantidade+'">'+data.produtos[i].quantidade+'</td>';
+    txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+data.produtos[i].unidade+'">'+data.produtos[i].unidade+'</td>';
+    txt = txt + '<td style="text-align: right;" valor="'+data.produtos[i].preco_unitario+'" id="body_id_preco_unitario'+n+'">R$ '+formatarValor(parseFloat(data.produtos[i].preco_unitario))+'</td>';
+    txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+data.produtos[i].preco_total+'" id="body_id_preco_total'+n+'">R$ '+formatarValor(parseFloat(data.produtos[i].preco_total))+'</td>';
+    txt = txt + '<td style="text-align: right;"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+    txt = txt + '</tr>';
+    $("#compra_id_body_produtos").append(txt);
+    n++;
+    }
+    var total = data.total.replace(".","");
+    $('#compra_id_total').val(formatarValor(parseFloat(total)));    
+  mostraFormularioCompra(0);
+}
+
+function clearFormProduto(){
+  $('#id_Compra').val(0);
+  $('#cliente_id_data_cadastro').val('')
+  $('#produto_fornecedor').val('').trigger('change');
+  $('#compra_id_preco').val('');
+  $('#compra_id_produto').val('');
+  $('#compra_id_unidade').val('');
+  $('#compra_id_quantidade').val('');
+  $('#compra_id_codigo').val('');
+  $('#compra_id_total').val('');
+  $('#compra_id_body_produtos').html('');
+    $("#compra_id_produto").attr("disabled", true);
+  $("#compra_id_quantidade").attr("disabled", true);
+  $("#compra_id_preco").attr("disabled", true);
+}
+
+function mostraGradeCompra(){
+  clearFormProduto();  
+  $('#gradeCliente').show();
+  $('#btnFormulaProduto').show();
+
+  $('#btnGradeCliente').hide();
+  $('#formularioProduto').hide();
+  $('#cliente_contatos_enderecos').hide();
+  $('#cliente_contatos').hide();
+  $('#cliente_enderecos').hide();
+  $('#cliente_contatos').html('');
+  $('#cliente_enderecos').html('');
+}
+
+function mostraFormularioCompra(edit){   
+  if (edit==1){
+    $('#id_Compra').val('0');
+    clearFormProduto();
+  }
+  $('#gradeCliente').hide();
+  $('#btnFormulaProduto').hide();      
+
+  $('#btnGradeCliente').show();
+  $('#formularioProduto').show();
+  $('#cliente_contatos_enderecos').show();
+  $('#cliente_contatos').show();
+  $('#cliente_enderecos').show();
+}
+
+function carregarProduto(id){
+  $.ajax({
+    data: {
+        id : id,
+      },
+    type: 'GET',
+    url:'/buscar/produto_fornecedor'
+  }).success(function(data){
+    $("#compra_id_produto").html("<option value=''>--</option>");
+    var txt = '';
+    txt = txt+ '<optgroup label="Compra">'   
+    for (i in data){        
+      txt = txt + "<option value='"+JSON.stringify(data[i])+"'>"+data[i].nome+"  - "+data[i].marca+"</option>";
+    }         
+    txt = txt+ '</optgroup>'
+    $("#compra_id_produto").append(txt);
+    $("#compra_id_unidade").val(data[i].nome).change();
+  }).fail(function(data){
+  });
+}
+
+function liberarProduto(){
+  $("#compra_id_produto").prop("disabled", false);
+  $("#compra_id_quantidade").prop("disabled", false);
+  $("#compra_id_preco").prop("disabled", false);
+}
+//Inserir Produto no extrato
+function inserirProduto(){
+  var n              = parseInt($("#compra_id_body_produtos tr").length)+1; 
+  var produto        = $("#compra_id_produto option:selected").text();
+  var quantidade     = parseFloat($("#compra_id_quantidade").val());
+  var unidade        = $("#compra_id_unidade").val();
+  var preco_unitario = parseFloat($("#compra_id_preco").val());
+  var preco_total    = quantidade * preco_unitario;
+  var total_geral    = 0;
+  $('.preco-total').each(function () {
+    total_geral = total_geral + parseFloat($(this).attr("valor"));
+  });
+  total_geral = total_geral + preco_total;
+  var txt = '';
+  txt = '<tr>';
+  txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+  txt = txt + '<td id="body_id_produto_'+n+'" valor="'+produto+'">'+ produto +'</td>';
+  txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+quantidade+'">'+quantidade+'</td>';
+  txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+unidade+'">'+unidade+'</td>';
+  txt = txt + '<td style="text-align: right;" valor="'+preco_unitario+'" id="body_id_preco_unitario'+n+'">R$ '+formatarValor(preco_unitario)+'</td>';
+  txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+preco_total+'" id="body_id_preco_total'+n+'">R$ '+formatarValor(preco_total)+'</td>';
+  txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+  txt = txt + '</tr>';
+  $("#compra_id_body_produtos").append(txt);
+  //total_geral = parseFloat(total_geral);
+  $("#compra_id_total").val(formatarValor(total_geral));
+}
+
+function excluirProduto(id){
+  confirmar('Atenção',
+            'Deseja excluir este produto?',
+            'red',
+            'fa fa-warning',
+            function(){
+              var txt = '';
+              i = 1;
+              n = 1;
+              produtos_selecionados = $('#compra_id_body_produtos >tr');
+              console.log(produtos_selecionados);
+              produtos_selecionados.each(function(){
+                var $this = $(this);
+                if(id != i){
+                  txt = txt + '<tr>';
+                  txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+                  txt = txt + '<td id="body_id_produto_'+n+'" valor="'+ $("#body_id_produto_"+i).attr("valor") +'">'+ $("#body_id_produto_"+i).text() +'</td>';
+                  txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+$("#body_id_quantidade_"+i).attr("valor")+'">'+$("#body_id_quantidade_"+i).text()+'</td>';
+                  txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+$("#body_id_unidade_"+i).attr("valor")+'">'+$("#body_id_unidade_"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" valor="'+$("#body_id_preco_unitario"+i).attr("valor")+'" id="body_id_preco_unitario'+n+'">'+ $("#body_id_preco_unitario"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+$("#body_id_preco_total"+i).attr("valor")+'" id="body_id_preco_total'+n+'">'+$("#body_id_preco_total"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+                  txt = txt + '</tr>';
+                  i++;
+                  n++;
+                }else{
+                  i++
+                }
+              });
+              $('#compra_id_body_produtos').html('');
+              $('#compra_id_body_produtos').html(txt);
+              var total_geral = 0;
+              $('.preco-total').each(function () {
+                total_geral = total_geral + parseFloat($(this).attr("valor"));
+              });
+              $("#compra_id_total").val(formatarValor(parseFloat(total_geral)));
+            }
+          )
+};
+
+//Data
+$(function () {
+    $( "#compra_id_produto").change(function () {
+      val = jQuery.parseJSON($("#compra_id_produto option:selected").attr("value"));
+      $("#compra_id_codigo").val(val.codigo);
+      $("#compra_id_unidade").val(val.unidade).change();
+      $("#compra_id_preco").val(val.preco);
+      });
+    
+    $("#produto_fornecedor").change(function(){
+      liberarProduto();
+      val = $("#produto_fornecedor option:selected").attr("value");
+      carregarProduto(val);
+    }); 
+
+});
+$('#id_get_compra').on('keypress', function (e) {
+         if(e.which === 13){
+          carregarGradeCompra()
+         }
+   });
+</script>
+<div class="right_col" role="main">
+  <div class="container body">
+    <div class="page-title">
+      <div class="title_left">                          
+        <h1>Compras</h1>
+      </div>    
+      <div class="title_right">
+        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+          <div class="input-group">
+            <input type="text" id="id_get_compra" class="form-control" placeholder="Pesquisar...">
+            <span class="input-group-btn">
+              <button id="cliente_btn_ok" class="btn btn-default" type="button" onclick="buscarCompra()">Ok!</button>
+            </span>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </br>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>Formulário de cadastro de compras</h2>
+          <ul class="nav navbar-right panel_toolbox">
+
+            <li id ="btnGradeCliente" style="display:none">
+              <a onclick="mostraGradeCompra()"><i class="fa fa-list"></i> Grade</a>
+            </li>
+            <li id ="btnFormulaProduto">
+              <a onclick="mostraFormularioCompra(1)"><i class="fa fa-list"></i> Novo</a>
+            </li>     
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content" id="formularioProduto" style="display:none">
+          <input type="hidden" id="id_Compra" name="id" value="0">                  
+          <form id="demo-form" data-parsley-validate>
+            <div class="row">
+              <div class="col-md-3 col-sm-3 col-cx-6">
+                <label class="control-label">Data de cadastro</label></br>
+                <div class='input-group date' id='cadastro'>
+                  <input type='text' class="form-control" name="cadastro" id="cliente_id_data_cadastro" readonly/>
+                  <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+                </div>
+              </div>
+              <div class="col-md-9 col-sm-9 col-xs-12">
+                <label for="fornecedorProduto"></span>Fornecedor</label>
+                <div class="input-group row-fluid">              
+                  <span class="input-group-addon">
+                      <i class="fa fa-truck"></i>
+                  </span>
+                  <select class="selectpicker form-control" data-live-search="true" id="produto_fornecedor" style="width: 100%;">
+                    </select>  
+                </div>
+              </div>          
+            </div>
+            <div class="x_title">
+              <h2>Produto</h2>
+              <ul class="nav navbar-right panel_toolbox">
+              </ul>
+              <div class="clearfix"></div>
+            </div>
+            <div class="row">
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <label for="descricaoCompra"></span>Produto</label>
+                <div class="input-group">              
+                  <span class="input-group-addon">
+                      <span class="fa fa-pencil"></span>
+                  </span>
+                  <select disabled="disabled" class="selectpicker form-control" data-live-search="true" id="compra_id_produto" style="width: 100%;">
+                    <option value='0'>-</option>
+                  </select>  
+                </div>
+              </div> 
+              <div class="col-md-2 col-sm-2 col-xs-6">
+                <label for="codigoProduto"></span>Código</label>
+                <div class="input-group">                
+                  <span class="input-group-addon">
+                      <i class="fa fa-code"></i>
+                  </span>
+                  <input disabled="disabled" type="number" name="codigoProduto" onkeypress="clearClassBad('compra_id_codigo')" maxlength="200" title="" id="compra_id_codigo" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-2 col-sm-2 col-xs-12">
+                <label class="control-label">Quantidade</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-cubes"></span>
+                  </span>
+                  <input disabled="disabled" type="number" maxlength="18" title="" id="compra_id_quantidade" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-2 col-sm-2 col-xs-12">
+                <label class="control-label">Unidade</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-thumb-tack"></span>
+                  </span>          
+                  <select disabled="disabled" class="selectpicker form-control" data-live-search="true"  name="" id ="compra_id_unidade" >
+                    <option value= "">...</option>
+                    <option>Cartela com 50</option>
+                    <option>Kilo</option>
+                    <option>Litros</option>
+                    <option>Metro</option>
+                    <option>Pacote</option>
+                    <option>Par</option>
+                    <option>Peça</option>
+                    <option>Rolo</option>
+                    <option>Rolo 300m</option>
+                    <option>Unidade</option>
+                  </select>
+                </div>
+              </div>    
+              
+              <div class="col-md-2 col-sm-2 col-xs-12">
+                <label class="control-label">Preço em R$</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-dollar"></span>
+                  </span>
+                  <input disabled="disabled" maxlength="18" title="" id="compra_id_preco" class="form-control" />
+                </div>
+              </div>
+              <div class="x-content pull-right">     
+                <button type="button" class="btn btn-round btn-default" onclick="inserirProduto()">Inserir</button>
+              </div> 
+            </div>
+            <div class="row">
+              <div class="table-responsive col-md-12 col-sm-12 col-xs-12"  id="fornecedor_gradeContato">
+                <table class="table table-hover" >
+                  <thead>
+                    <tr>
+                      <th style="width: 2%">#</th>
+                      <th style="width: 35%">Produto</th>
+                      <th style="width: 5%">Qtd</th>
+                      <th style="width: 8%">Unidade</th>
+                      <th style="width: 21%; text-align: right;">Preço Unitário</th>
+                      <th style="width: 21%; text-align: right;">Preço Total</th>
+                      <th style="width: 8%; text-align: right;">Excluir</th>
+                    </tr>
+                  </thead>
+                  <tbody id="compra_id_body_produtos">
+
+                  </tbody> 
+                </table>
+              </div>
+              <div class="col-md-4 col-sm-4 col-xs-12 pull-right">
+                <label class="control-label">Total :</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-dollar"></span>
+                  </span>
+                  <input style="text-align: right;" maxlength="18" title="" id="compra_id_total" class="form-control" readonly/>
+                </div>
+              </div>
+            </div>
+            </br>
+            <div class="x-content pull-right">     
+              <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeCompra()">Cancelar</button> 
+              <button type="button" class="btn btn-round btn-success" onclick="adicionarCompra()">Salvar</button>
+            </div>           
+          </form>
+        </div>
+        <div class="table-responsive"  id="gradeCliente">
+          <table class="table table-hover"  >
+            <thead>
+              <tr name="parse_table">
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Data</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 70%;" aria-sort="ascending">Fornecedor</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 18%;" aria-sort="ascending">Preço Total</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;">Ações</th>
+              </tr>
+            </thead>      
+            <tbody id="id_itens_compras">
+            </tbody>
+          </table>
+        </div>
+        </div> 
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  
+<script type="text/javascript">
+  $(document).ready(function() {
+    carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
+    buscarCompra();
+  });
+</script>
+{% endblock javascripts %}

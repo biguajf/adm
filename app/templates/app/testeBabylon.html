@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<body>
+    <canvas touch-action="none" id="renderCanvas" tabindex="1" width="1200" height="560"></canvas>
+</body>
+</html>
+<script src = "https://cdn.babylonjs.com/babylon.js"></script>
+<script src = "https://cdn.babylonjs.com/babylon.max.js"></script>
+<script src = "https://cdn.babylonjs.com/babylon.worker.js"></script>
+<script>
+// Get the canvas DOM element
+var canvas = document.getElementById('renderCanvas');
+// Load the 3D engine
+var engine = new BABYLON.Engine(canvas, true, {preserveDrawingBuffer: true, stencil: true});
+// CreateScene function that creates and return the scene
+var createScene = function () {
+    var scene = new BABYLON.Scene(engine);
+
+    //Adding a light
+    var light = new BABYLON.PointLight("Omni", new BABYLON.Vector3(20, 20, 100), scene);
+
+    //Adding an Arc Rotate Camera
+    var camera = new BABYLON.ArcRotateCamera("Camera", 2, 1, 7, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, false);
+
+    // The first parameter can be used to specify which mesh to import. Here we import all meshes
+    BABYLON.SceneLoader.ImportMesh("", "/static/build/", "caneca.babylon", scene, function (newMeshes) {
+        // Set the target of the camera to the first imported mesh
+        camera.target = newMeshes[0];
+    });
+
+    // Move the light with the camera
+    scene.registerBeforeRender(function () {
+        light.position = camera.position;
+    });
+
+    return scene;
+}
+
+// call the createScene function
+var scene = createScene();
+// run the render loop
+engine.runRenderLoop(function(){
+    scene.render();
+});
+// the canvas/window resize event handler
+window.addEventListener('resize', function(){
+    engine.resize();
+});
+</script>

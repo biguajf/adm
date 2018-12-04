@@ -1,0 +1,712 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Projects {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+<script>
+  // Funçoes de Cliente
+  
+  function buscarCliente(){
+    $.ajax({
+      data: {
+        filtro : $('#id_get_entidade_cliente').val(),
+      },
+      type: 'GET',
+      url:'/buscar/cliente/'
+    }).success(function(data){
+      var texto_html = '';
+      for (i in data) { 
+          var n = parseInt(i) + 1;
+          texto_html = texto_html + '<tr>';
+            texto_html = texto_html + '<th scope="row">'+n+'</th>';
+            if (data[i].ativo==true){
+              texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" checked/></td>';
+            }
+            else{
+              texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" /></td>';
+            }
+            texto_html = texto_html + '<td>'+data[i].tipo_pessoa+'</td>';
+            texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
+            if (data[i].nome_fantasia){
+              texto_html = texto_html + '<td>'+ data[i].nome_fantasia +'</td>';
+            }
+            else{
+              texto_html = texto_html + '<td></td>'; 
+            }
+  
+            texto_html = texto_html + '<td>';
+            var parametro_edit = "'editarCliente("+ JSON.stringify(data[i])+")'";
+              texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
+              texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirEntidade("'+ data[i]._id['$oid'] +'","Cliente","cliente")></i>';
+            texto_html = texto_html + '</td>';
+          texto_html = texto_html + '</tr>';
+      }  
+      $('#id_itens_clientes').html(texto_html);
+    }).fail(function(data){
+        alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
+    });
+}
+
+function adicionarCliente(flag=0){
+  if ($("#cliente_id_nome").val() == ''){
+    if (flag == 0){
+      $("#cliente_id_nome").parent().addClass("bad");
+      alertar('ATENÇÂO','Preencha os campos corretamente','red', 'glyphicon glyphicon-alert');
+    }else{
+      $("#cliente_id_nome").parent().addClass("bad");
+      alertar('ATENÇÂO','É preciso preencher o cadastro do cliente','red', 'glyphicon glyphicon-alert');
+    }
+  }else{
+    $.ajax({
+      data: {
+        cliente : {
+          id_cliente :  $('#cliente_id').val(),
+          ativo : $('#cliente_id_ativo').val(),
+          tipo_pessoa : $("#cliente_id_tipo").val(),
+          CNPJ : $("#cliente_id_CNPJ").val(),
+          nome : $("#cliente_id_nome").val(),
+          nome_fantasia : $("#cliente_id_nome_fantasia").val(),
+          inscricao_estadual : $("#cliente_id_inscestadual").val(),
+          inscricao_municipal : $("#cliente_id_inscmunicipal").val(),
+          data_fundacao : $("#cliente_data_fundacao").val(),
+          CRT : $("#cliente_id_crt").val(),
+          CPF : $("#cliente_id_CPF").val(),
+          RG : $("#cliente_id_rg").val(),
+          registro : $("#cliente_id_registro").val(),
+          data_nascimento : moment($('#cliente_data_nascimento').data("DateTimePicker").date()).format('DD/MM/YYYY'),
+          sexo : $("#cliente_id_sexo").val(),
+          estado_civil : $("#cliente_id_estado_civil").val(),
+          nome_conjuge : $("#cliente_id_nome_conjuge").val(),      
+          observacao : $("#cliente_obs").val()
+        },
+      },
+      type: 'POST',
+      url:'/adicionar/cliente'
+      }).success(function(data){
+        $('#cliente_id').val(data.result);
+        alertar('Sucesso','Cliente cadastrado com sucesso','green','fa fa-sucess');
+        switch(flag) {
+          case 0:
+              mostraGradeCliente();
+              buscarCliente();
+            break;
+
+          case 1:
+              adicionarEndereco("Cliente", "cliente");
+              buscarCliente();
+            break;
+
+          case 2:
+              adicionarContato("Cliente", "cliente");
+              buscarCliente();
+            break;
+        }
+        
+      }).fail(function(data){
+        alertar('Atenção','Não foi possível salvar o registro </br> Tente novamente mais tarde','red','fa fa-warning');                          
+    });
+  }
+  return 1;
+}
+
+function editarCliente(data){
+  $('#cliente_id').val(data._id['$oid']);
+
+  if (data.ativo==true){
+    $('#cliente_id_ativo').prop("checked", true );
+  }
+  else{
+    $('#cliente_id_ativo').prop("checked", false );
+  }
+
+  $('#cliente_id_tipo').val(data.tipo_pessoa).trigger('change');
+  $('#cliente_id_nome').val(data.nome);
+  $('#cliente_id_data_cadastro').val(moment(data.data_cadastro['$date']).format('DD/MM/YYYY'));
+  $("#cliente_obs").val(data.observacao);
+  if (data.tipo_pessoa == 'PJ'){
+  $('#cliente_id_CNPJ').val(data.CNPJ);
+    $('#cliente_id_nome_fantasia').val(data.nome_fantasia);
+    $('#cliente_id_inscestadual').val(data.inscricao_estadual);
+    $('#cliente_id_inscmunicipal').val(data.inscricao_municipal);
+    $('#cliente_data_fundacao').val(data.data_fundacao);
+    $('#cliente_id_crt').val(data.CRT);
+  }else if(data.tipo_pessoa == 'PF'){
+    $("#cliente_id_CPF").val(data.CPF);
+    $("#cliente_id_rg").val(data.RG);
+    $("#cliente_id_registro").val(data.registro);
+    $("#cliente_data_nascimento_input").val(moment(data.data_nascimento['$date']).format('DD/MM/YYYY'));
+    $("#cliente_id_sexo").val(data.sexo);
+    $("#cliente_id_estado_civil").val(data.estado_civil);
+    $("#cliente_id_nome_conjuge").val(data.nome_conjuge);
+  }
+  
+  var contato_html = '';
+  var endereco_html = '';    
+  for (i in data.contato){
+    var n = parseInt(i) + 1;
+    contato_html = contato_html + '<tr>';
+    contato_html = contato_html + '<th scope="row">'+n+'</th>';
+    contato_html = contato_html + '<td>'+ data.contato[i].nome +'</td>';
+    contato_html = contato_html + '<td>'+ data.contato[i].email +'</td>';
+    contato_html = contato_html + '<td>'+ data.contato[i].telefone +'</td>';
+    var parametro_edit_cont = "'"+ n +"','"+ data.contato[i].nome +"','"+ data.contato[i].email +"','"+ data.contato[i].telefone +"','cliente'";
+    contato_html = contato_html + '<td><i class="fa fa-pencil-square-o" aria-hidden="true" onclick="editarContato('+ parametro_edit_cont +')"></i>';      
+    var parametro_excluir_cont = "'"+ n +"','"+ data._id['$oid'] +"','cliente','Cliente'";
+    contato_html = contato_html + '<i class="fa fa-trash" aria-hidden="true" onclick="excluirContato('+ parametro_excluir_cont +')"></i>';
+    contato_html = contato_html + '</td>';
+    contato_html = contato_html + '</tr>';
+  }
+  for (j in data.endereco){
+    var n = parseInt(j) + 1;
+    endereco_html = endereco_html + '<tr>';
+    endereco_html = endereco_html + '<th scope="row">'+n+'</th>';
+    endereco_html = endereco_html + '<td>'+ data.endereco[j].tipo +'</td>';
+    endereco_html = endereco_html + '<td>'+ data.endereco[j].tipo_logradouro+' '+data.endereco[j].logradouro+'</td>';
+    endereco_html = endereco_html + '<td>'+ data.endereco[j].numero +'</td>';
+    endereco_html = endereco_html + '<td>'+ data.endereco[j].bairro +'</td>';
+    endereco_html = endereco_html + '<td>'+ data.endereco[j].cidade +'</td>';
+    var parametro_edit_end = '"'+n+'",'+ JSON.stringify(data.endereco[j])+',"cliente"';
+    endereco_html = endereco_html + "<td><i class='fa fa-pencil-square-o' aria-hidden='true' onclick='editarEndereco("+parametro_edit_end +")'></i>";
+    var parametro_excluir_end = "'"+ n +"','"+ data._id['$oid'] +"','cliente','Cliente'";
+    endereco_html = endereco_html + '<i class="fa fa-trash" aria-hidden="true" onclick="excluirEndereco('+ parametro_excluir_end +')"></i>';
+    endereco_html = endereco_html + '</td>';
+    endereco_html = endereco_html + '</tr>';
+  }
+  $('#cliente_contatos').html(contato_html);
+  $('#cliente_enderecos').html(endereco_html);
+  $('#cliente_contatos').show();
+  $('#cliente_enderecos').show();
+  mostraTipoCliente(data.tipo_pessoa);  
+  mostraFormularioCliente(0);
+}
+
+function clearFormCliente(){
+  $('#cliente_id').val('0');
+  $('#cliente_id_CNPJ').val('');
+  $('#cliente_id_nome').val('');
+  $('#cliente_id_nome_fantasia').val('');
+  $('#cliente_id_inscestadual').val('');
+  $('#cliente_id_inscmunicipal').val('');
+  $('#cliente_data_fundacao').val('');
+  $('#cliente_id_crt').val('');
+  $("#cliente_id_CPF").val('');
+  $("#cliente_id_rg").val('');
+  $("#cliente_id_registro").val('');
+  $("#cliente_data_nascimento").val('');
+  $("#cliente_id_sexo").val('');
+  $("#cliente_id_estado_civil").val('');
+  $("#cliente_id_nome_conjuge").val('');
+  $("#cliente_obs").val('');
+  $("#cliente_id_nome_contato").val('');
+  $("#cliente_id_email_contato").val('');
+  $("#cliente_id_telefone_contato").val('');
+  $("#cliente_id_logradouro").val('');
+  $("#cliente_id_cidade").val('');
+  $("#cliente_id_numero").val('');
+  $("#cliente_id_estado").val('');
+  $("#cliente_id_CEP").val('');
+  $("#cliente_id_tipo_logradouro").val('');
+  $("#cliente_id_tipo_endereco").val('');
+  $("#cliente_id_bairro").val('');
+  $("#cliente_id_complemento").val('');
+  $("#cliente_id_referencia").val('');
+}
+
+function mostraGradeCliente(){
+    clearFormCliente();
+    mostrarGradeEndereco('cliente');
+    mostrarGradeContato('cliente');
+    
+    $('#gradeCliente').show();
+    $('#btnFormularioCliente').show();
+
+    $('#btnGradeCliente').hide();
+    $('#formularioCliente').hide();
+    $('#cliente_contatos_enderecos').hide();
+    $('#cliente_contatos').hide();
+    $('#cliente_enderecos').hide();
+    $('#cliente_contatos').html('');
+    $('#cliente_enderecos').html('');
+  }
+
+  function mostraTipoCliente(tipo){
+    if(tipo == "PJ"){
+      $('#cliente_juridica').show();
+      $('#cliente_fisica').hide();
+    }else if(tipo == "PF"){
+      $('#cliente_fisica').show();
+      $('#cliente_juridica').hide();
+    }
+  }
+
+  function mostraFormularioCliente(edit){   
+    if (edit==1){
+      $('#cliente_id').val('0');
+      clearFormCliente();
+    }
+    $('#gradeCliente').hide();
+    $('#btnFormularioCliente').hide();      
+
+    $('#btnGradeCliente').show();
+    $('#formularioCliente').show();
+    $('#cliente_contatos_enderecos').show();
+    $('#cliente_contatos').show();
+    $('#cliente_enderecos').show();
+  }   
+  
+
+function gravarCliente(){
+  if ( $("#cliente_id_nome_contato").val() != '' || $("#cliente_id_email_contato").val() != '' || $("#cliente_id_telefone_contato").val() != '' ){
+    adicionarContato('Cliente','cliente');
+  }else if( $("#cliente_id_logradouro").val() != '' || $("#cliente_id_cidade").val() != '' || $("#cliente_id_CEP").val() != '' || $("#cliente_id_bairro").val() != ''){
+    adicionarEndereco('Cliente','cliente');    
+  }else{
+    adicionarCliente(0);
+  }
+}
+
+//Data
+$(function () {
+    buscarCliente();
+    $('#cliente_data_nascimento').datetimepicker({        
+        format: 'DD/MM/YYYY',
+        daysOfWeekDisabled: [0, 6],
+        locale: 'pt-br'
+    });
+    $('#cliente_data_fundacao').datetimepicker({           
+        format: 'DD/MM/YYYY',
+        daysOfWeekDisabled: [0, 6],
+        locale: 'pt-br'
+    });        
+
+});
+$('#id_get_entidade_cliente').on('keypress', function (e) {
+         if(e.which === 13){
+          buscarCliente()
+         }
+   });
+</script>
+<div class="right_col" role="main">
+  <div class="container body">
+    <div class="page-title">
+      <div class="title_left">                          
+        <h1>Clientes</h1>
+      </div>    
+      <div class="title_right">
+        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+          <div class="input-group">
+            <input type="text" id="id_get_entidade_cliente" class="form-control" placeholder="Pesquisar...">
+            <span class="input-group-btn">
+              <button id="cliente_btn_ok" class="btn btn-default" type="button" onclick="buscarCliente()">Ok!</button>
+            </span>
+          </div> 
+        </div>
+      </div>
+    </div>
+    </br>
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+          <div class="x_title">
+            <h2>Formulário de cadastro de clientes</h2>
+            <ul class="nav navbar-right panel_toolbox">
+
+              <li id ="btnGradeCliente" style="display:none">
+                <a onclick="mostraGradeCliente()"><i class="fa fa-list"></i> Grade</a>
+              </li>
+              <li id ="btnFormularioCliente">
+                <a onclick="mostraFormularioCliente(1)"><i class="fa fa-list"></i> Novo</a>
+              </li>     
+            </ul>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content" id="formularioCliente" style="display:none">
+            <input type="hidden" id="cliente_id" name="id" value="0">                  
+            <form id="demo-form" data-parsley-validate>
+              <div class="row">
+                <div class="col-md-1 col-sm-1 col-xs-12">
+                  <br/>
+                  <label for="cliente_id_ativo">
+                    <input type="checkbox" name="ativo" class="checkbox_true_false" id="cliente_id_ativo" value=true checked/> Ativo
+                  </label>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12">
+                  <label class="control-label">Tipo</label>
+                  <select class="selectpicker form-control" data-live-search="true"  name="tipo" id ="cliente_id_tipo" onchange="mostraTipoCliente(this.value)">
+                    <option value= "PF">FÍSICA</option>
+                    <option value= "PJ">JURÍDICA</option>
+                  </select>
+                </div>   
+                <div class="col-md-7 col-sm-7 col-xs-12">
+                  <label for="razaoSocial"></span>Nome</label>
+                  <div class="input-group">                
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-user"></span>
+                    </span>
+                    <input type="text" name="razaoSocial" onkeypress="clearClassBad('cliente_id_nome')" maxlength="200" title="" id="cliente_id_nome" class="form-control" />
+                  </div>
+                </div> 
+                <div class="col-md-2 col-sm-2 col-cx-4">
+                  <label class="control-label">Data de cadastro</label></br>
+                  <div class='input-group date' id='cadastro'>
+                    <input type='text' class="form-control" name="cadastro" id="cliente_id_data_cadastro" readonly/>
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <label for="">Observações</label>
+                  <div class="form-group">
+                    <label class="sr-only control-label" for="">Observações</label>
+                    <textarea id="cliente_obs" class="form-control" data-parsley-trigger="keyup" data-parsley-minlength="0" data-parsley-maxlength="500" data-parsley-validation-threshold="10"></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div id="cliente_juridica" style="display:none">
+                  <fieldset class="col-md-12 col-sm-12 col-xs-12">
+                    <legend>Pessoa Jurídica</legend>
+                    <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <label for="cnpj">CNPJ</label>
+                        <div class="form-group">
+                          <label class="sr-only control-label" for="cliente_id_CNPJ">CNPJ</label>
+                          <input type="text" name="CNPJ"  maxlength="18" title="" id="cliente_id_CNPJ" class="form-control cnpj" />
+                        </div>
+                      </div>
+
+                      <div class="col-md-9 col-sm-9 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label" for="cliente_id_nome_fantasia">Nome fantasia</label>
+                          <input type="text" name="nomeFantasia" maxlength="100" title="" id="cliente_id_nome_fantasia" class="form-control" />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label">CRT</label>
+                          <select class="selectpicker form-control" data-live-search="true"  name="CRT" id ="cliente_id_crt" >
+                            <option value= "">...</option>
+                            <option value= "1">1 - SIMPLES NACIONAL</option>
+                            <option value= "2">2 - LUCRO PRESUMIDO</option>
+                            <option value= "3">3 - LUCRO REAL</option>
+                          </select>
+                        </div>   
+                      </div>
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <label for="inscestadual">Inscrição estadual</label>
+                        <div class="form-group">
+                          <label class="sr-only control-label" for="cliente_id_inscestadual">Inscrição estadual</label>
+                          <input type="text" name="inscestadual" maxlength="200" title="" id="cliente_id_inscestadual" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <label for="inscmunicipal">Inscrição municipal</label>
+                        <div class="form-group">
+                          <label class="sr-only control-label" for="cliente_id_inscmunicipal">Inscrição estadual</label>
+                          <input type="text" name="inscmunicipal" maxlength="200" title="" id="cliente_id_inscmunicipal" class="form-control" />
+                        </div>
+                      </div>
+                      <div class="col-md-3 col-sm-3 col-xs-12">
+                        <label class="control-label">Data de fundação</label></br>
+                        <div class='input-group date form-group' id='cliente_data_fundacao'>
+                          <input type='text' class="form-control" id='data_fundacao_input'/>
+                          <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+              <div class="row">
+                <div  id="cliente_fisica">
+                  <fieldset class="col-md-12 col-sm-12 col-xs-12">
+                    <legend>Pessoa Física</legend>
+                    <div class="row">
+                      <div class="col-md-2 col-sm-2 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label" for="cliente_id_CPF">CPF</label>
+                          <input type="text" name="cpf" class="form-control form-control cpf" id="cliente_id_CPF" title="" />
+                        </div>
+                      </div>
+                      <div class="col-md-2 col-sm-2 col-xs-12">
+                        <div class="form-group">
+                          <label class="control-label" for="cliente_id_rg">RG</label>
+                          <input type="text" name="RG" value="" class="form-control form-control" id="cliente_id_rg" title="" />
+                        </div>
+                      </div>
+                      <div class="col-md-2 col-sm-2 col-cx-4">
+                        <label class="control-label">Data de nascimento</label></br>
+                        <div class='input-group date form-group' id='cliente_data_nascimento'>
+                          <input type='text' class="form-control" id='cliente_data_nascimento_input' />
+                          <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="col-md-2 col-sm-2 col-xs-12">
+                        <label class="control-label">Sexo</label>
+                        <div class="form-group">
+                          <select class="selectpicker form-control" data-live-search="true"  name="" id ="cliente_id_sexo" >
+                            <option value= "">...</option>
+                            <option>MASCULINO</option>
+                            <option>FEMININO</option>               
+                          </select>
+                        </div>   
+                      </div> 
+                      <div class="col-md-2 col-sm-2 col-xs-12">
+                        <label class="control-label">Estado civil</label>
+                        <div class="form-group">
+                          <select class="selectpicker form-control" data-live-search="true"  name="" id ="cliente_id_estado_civil" >
+                            <option value= "">...</option>
+                            <option>SOLTEIRO</option>
+                            <option>CASADO</option>               
+                          </select>
+                        </div> 
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12 col-sm-12 col-xs-12">
+                        <label class="control-label" for="cliente_id_nome_conjuge">Nome do conjuge</label>
+                        <div class="input-group">
+                          <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-user"></span>
+                          </span>
+                          <input type="text" value="" class="form-control" id="cliente_id_nome_conjuge" title="" />
+                        </div>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              </div>
+              <br/>
+              <div class="row" id="cliente_contatos_enderecos" style="display:none">
+                <div class="col-md-6 col-xs-12">
+                  <div class="x_panel">
+                    <div class="x_title">
+                      <h2>Contatos</h2>                   
+                      <ul class="nav navbar-right panel_toolbox">          
+                        <li id ="cliente_btn_grade_contato" style="display:none">
+                          <a onclick="mostrarGradeContato('cliente')"><i class="fa fa-list"></i> Grade</a>
+                        </li>
+                        <li id ="cliente_btn_formulario_contato">
+                          <a onclick="mostrarFormularioContato(true,'cliente')"><i class="fa fa-list"></i> Novo</a>
+                        </li>            
+                      </ul>            
+                      <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content"  id="cliente_formulario_contato" style="display:none"><br />
+                      <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12 form-group has-feedback">
+                          <input type="hidden" id="cliente_id_contato" name="id" value="0">
+                          <input type="text" class="form-control has-feedback-left" id="cliente_id_nome_contato" placeholder="Nome">
+                          <span class="fa fa-user form-control-feedback left" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
+                          <input type="text" class="form-control has-feedback-left" id="cliente_id_email_contato" placeholder="E-mail">
+                          <span class="fa fa-envelope form-control-feedback left" aria-hidden="true"></span>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-12 form-group has-feedback">
+                          <input type="text" class="form-control tel" id="cliente_id_telefone_contato" placeholder="Telefone">
+                          <span class="fa fa-phone form-control-feedback right" aria-hidden="true"></span>
+                        </div>
+                      </div>
+                      <div class="x-content pull-right">       
+                        <button type="button" class="btn btn-round btn-default" onclick="gravarCliente()">Salvar</button>
+                      </div>
+                    </div>
+                    <div class="table-responsive"  id="cliente_grade_contato">
+                      <table class="table table-hover" >
+                        <thead>
+                          <tr>
+                            <th>#</th> 
+                            <th>Nome</th>
+                            <th>E-mail</th>
+                            <th>Telefone</th>
+                            <th>Ações</th>
+                          </tr>
+                        </thead>             
+                          <tbody id="cliente_contatos">
+                          
+                          </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6 col-xs-12">
+                    <div class="x_panel">
+                      <div class="x_title">
+                        <h2>Endereços</h2>    
+                        <ul class="nav navbar-right panel_toolbox">          
+                          <li id ="cliente_btn_grade_endereco" style="display:none">
+                            <a onclick="mostrarGradeEndereco('cliente')"><i class="fa fa-list"></i> Grade</a>
+                          </li>
+                          <li id ="cliente_btn_formulario_endereco">
+                            <a onclick="mostrarFormularioEndereco(true,'cliente')"><i class="fa fa-list"></i> Novo</a>
+                          </li>            
+                        </ul>   
+                        <div class="clearfix"></div>
+                      </div>
+                      <div class="x_content" id="cliente_formulario_endereco" style="display:none"><br/> 
+                        <input type="hidden"  class="form-control" id="cliente_id_edit_endereco" value="0" required>
+                        <div class="row">
+                          <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback">
+                            <select id="cliente_id_tipo_endereco" class="selectpicker form-control" data-live-search="true" title="Tipo">
+                              <option>SEDE</option>
+                              <option>ENTREGA</option>
+                              <option>COBRANÇA</option>
+                            </select>
+                          </div>   
+                          <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback">           
+                            <input type="text" name="CEP" class="form-control cep" title="" placeholder="CEP" id="cliente_id_CEP" maxlength="20">             
+                          </div>
+                          <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback">           
+                            <select id="cliente_id_tipo_logradouro" title="tipo logradouro" class="selectpicker form-control" data-live-search="true" style="width: 100%">
+                              <option>RUA</option>
+                              <option>Avenida</option>
+                              <option>PRAÇA</option>
+                              <option>LARGO</option>
+                              <option>TRAVESSA</option>
+                              <option>RODOVIA</option>
+                              <option>ESTRADA</option>
+                              <option>VIA</option>
+                              <option>ALAMEDA</option>
+                              <option>QUADRA</option>
+                            </select>            
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-8 col-sm-8 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="Logradouro" name="logradouro" class="form-control" title="" id="cliente_id_logradouro" maxlength="100">
+                          </div>         
+                          <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="N°" name="numero" class="form-control" title="" id="cliente_id_numero" maxlength="10">
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-6 col-sm-5 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="Complemento" name="complemento" class="form-control" title="" id="cliente_id_complemento">
+                          </div>
+                          <div class="col-md-6 col-sm-5 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="Bairro" name="bairro" class="form-control" title="" id="cliente_id_bairro" maxlength="100">
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-5 col-sm-5 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="Referência" name="Referencia" class="form-control" title="" id="cliente_id_referencia">
+                          </div>
+                          <div class="col-md-4 col-sm-4 col-xs-12 form-group has-feedback">
+                            <input type="text" placeholder="Cidade" name="cidade" class="form-control" title="" id="cliente_id_cidade" maxlength="100">
+                          </div>
+                          <div class="col-md-3 col-sm-3 col-xs-12 form-group has-feedback">
+                            <select id="cliente_id_estado" title="Estado" class="selectpicker form-control" data-live-search="true" style="width: 100%">
+                              <option>AC</option>
+                              <option>AL</option>
+                              <option>AP</option>
+                              <option>AM</option>
+                              <option>BA</option>
+                              <option>CE</option>
+                              <option>DF</option>
+                              <option>ES</option>
+                              <option>GO</option>
+                              <option>MA</option>
+                              <option>MT</option>
+                              <option>MS</option>
+                              <option>MG</option>
+                              <option>PA</option>
+                              <option>PB</option>
+                              <option>PR</option>
+                              <option>PE</option>
+                              <option>PI</option>
+                              <option>RJ</option>
+                              <option>RN</option>
+                              <option>RS</option>
+                              <option>RO</option>
+                              <option>RR</option>
+                              <option>SC</option>
+                              <option value="SP" selected>SP</option>
+                              <option>SE</option>
+                              <option>TO</option>            
+                            </select>        
+                          </div>
+                        </div>
+                        <div class="x-content pull-right">                             
+                          <button type="button" class="btn btn-round btn-default" onclick="gravarCliente()">Salvar</button> 
+                        </div>
+                      </div>  
+                      <div class="table-responsive" id="cliente_grade_endereco">
+                        <table class="table table-hover">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Tipo</th>
+                              <th>Logradouro</th>
+                              <th>Número</th>
+                              <th>Bairro</th>
+                              <th>Cidade</th>
+                              <th>Ações</th>
+                            </tr>
+                          </thead>
+                          <tbody id="cliente_enderecos">
+                          </tbody>
+                        </table> 
+                      </div>
+                    </div>  
+                  </div>
+                </div>
+                <div class="x-content pull-right">     
+                  <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeCliente()">Cancelar</button> 
+                  <button type="button" class="btn btn-round btn-success" onclick="gravarCliente()">Salvar</button>
+                </div>
+              </div>
+            </form>
+          <div class="table-responsive"  id="gradeCliente">
+            <table class="table table-hover"  >
+              <thead>
+                <tr name="parse_table">
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Ativo</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Tipo</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 45%;" aria-sort="ascending">Nome</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 38%;" aria-sort="ascending"></th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;">Ações</th>
+                </tr>
+              </thead>      
+              <tbody id="id_itens_clientes">
+              </tbody>
+            </table>
+          </div>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+<script type="text/javascript">
+  $(document).ready(function() {
+  //$('.selectpicker').selectpicker("refresh");
+  $('.tel').mask('(00) 00000-0009');
+  $('.cnpj').mask('00.000.000/0000-00', {reverse: true});
+  $('.cpf').mask('000.000.000-00', {reverse: true});
+  $('.cep').mask('00000-000');
+  checkboxTrueFalse() 
+});
+</script>
+{% endblock javascripts %}

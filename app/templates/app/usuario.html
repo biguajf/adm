@@ -1,0 +1,270 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Projects {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+
+<script> 
+  // Funçoes de Cliente
+  function buscarUsuario(){
+    $.ajax({
+      data: {
+        filtro : $('#id_get_usuario').val(),
+      },
+      type: 'GET',
+      url:'/buscar/usuario/'
+    }).done(function(data){
+      var texto_html = '';
+        for (i in data) {
+          var n = parseInt(i) + 1;
+          texto_html = texto_html + '<tr>';
+            texto_html = texto_html + '<th scope="row">'+n+'</th>';
+            texto_html = texto_html + '<td>'+data[i].usuario+'</td>';
+            texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
+            var parametro_edit = "'editarUsuario("+ JSON.stringify(data[i])+")'";
+            texto_html = texto_html + '<td>';
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i> ';
+            texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirUsuario("'+ data[i]._id['$oid']+'")></i>';
+            texto_html = texto_html + '</td>';
+          texto_html = texto_html + '</tr>';
+        }
+        $('#id_itens_usuarios').html(texto_html);
+      }).fail(function(data){
+        alertar('Atenção','Não foi possível buscar a lista dos usuarios </br> Tente novamente mais tarde','red','fa fa-warning');
+    });
+  }
+
+  function adicionarUsuario(){
+    $('#spinner_modal').modal('show');
+    if ($("#usuario_id_senha").val() == ''){
+      $('#spinner_modal').modal('hide');
+      $("#usuario_id_senha").parent().addClass("bad");
+      alertar('ATENÇÂO','Preencha a senha','red', 'glyphicon glyphicon-alert');
+    }else{
+      $.ajax({
+        data: {
+          usuario : {
+            id : $('#usuario_id').val(),
+            nome :  $('#usuario_id_nome').val(),
+            email : $('#usuario_id_email').val(),
+            usuario : $("#usuario_id_usuario").val(),
+            senha : $("#usuario_id_senha").val(),
+          },
+        },
+        type: 'POST',
+        url:'/adicionar/usuario'
+      }).success(function(data){
+        $("#usuario_id_senha").parent().removeClass("bad");
+        buscarUsuario();
+        mostraGradeUsuario();
+        alertar('Sucesso','Usuario cadastrado com sucesso','green','fa fa-sucess');
+        $('#spinner_modal').modal('hide');        
+      }).fail(function(data){
+        $('#spinner_modal').modal('hide');
+        alertar('Atenção','Não foi possível salvar o usuario </br> Confirme a senha','red','fa fa-warning');
+      });
+    }
+    return 1;
+  }
+
+function editarUsuario(data){
+  $('#usuario_id').val(data._id['$oid']);
+  $('#usuario_id_usuario').val(data.usuario);
+  $('#usuario_id_nome').val(data.nome);
+  $("#usuario_id_email").val(data.email);
+  $("#usuario_id_cadastro").val(moment(data.cadastro['$date']).format('DD/MM/YYYY'));
+  mostraFormularioUsuario(0);
+}
+
+function clearFormUsuario(){
+  $('#usuario_id').val('0');
+  $('#usuario_id_usuario').val('');
+  $('#usuario_id_nome').val('');
+  $('#usuario_id_email').val('');
+  $('#usuario_id_senha').val('');
+  $('#usuario_id_cadastro').val('');
+  $("#usuario_id_senha").parent().removeClass("bad");
+}
+
+function mostraGradeUsuario(){
+  clearFormUsuario();
+
+  $('#gradeUsuario').show();
+  $('#btnFormularioUsuario').show();
+
+  $('#btnGradeUsuario').hide();
+  $('#formularioUsuario').hide();
+}
+
+function mostraFormularioUsuario(editar){
+  if (editar==1){
+    clearFormUsuario();
+    $('#usuario_id').val('0');
+  }
+  $('#gradeUsuario').hide();
+  $('#btnFormularioUsuario').hide();
+
+  $('#btnGradeUsuario').show();
+  $('#formularioUsuario').show();
+}
+
+
+function excluirUsuario(id){
+  confirmar('Atenção',
+            'Deseja excluir este usuario?',
+            'red',
+            'fa fa-warning',
+            function(){
+              $('#spinner_modal').modal('show');
+              var self = this;
+              self.close();
+             return $.ajax({
+                    data: {
+                        id : id,
+                      },
+                    type: 'POST',
+                    url:'/excluir/usuario/'
+                    }).success(function(data){
+                      $('#spinner_modal').modal('hide');
+                      $("#id_btn_pesquisar").click();
+                    }).fail(function(data){
+                        $('#spinner_modal').modal('hide');
+                        alertar('Atenção','Não foi possível excluir este usuario </br> Tente novamente mais tarde','red','fa fa-warning');
+                    });
+                  }
+  )
+}
+//Data
+$('#id_get_usuario').on('keypress', function (e) {
+         if(e.which === 13){
+          buscarUsuario()
+         }
+   });
+$(function () {
+    buscarUsuario();
+   });
+</script>
+<div class="right_col" role="main">
+  <div class="container body">
+    <div class="page-title">
+      <div class="title_left">
+        <h1>Usuarios</h1>
+      </div>
+      <div class="title_right">
+        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+          <div class="input-group">
+            <input type="text" id="id_get_usuario" class="form-control" placeholder="Pesquisar...">
+            <span class="input-group-btn">
+              <button id="fornecedor_btn_ok" class="btn btn-default" type="button" id="id_btn_pesquisar" onclick="buscarUsuario()">Ok!</button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    </br>
+    <div class="row">
+      <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+          <div class="x_title">
+            <h2>Formulário de cadastro de fornecedores</h2>
+            <ul class="nav navbar-right panel_toolbox">
+
+              <li id ="btnGradeUsuario" style="display:none">
+                <a onclick="mostraGradeUsuario()"><i class="fa fa-list"></i> Grade</a>
+              </li>
+              <li id ="btnFormularioUsuario">
+                <a onclick="mostraFormularioUsuario(1)"><i class="fa fa-list"></i> Novo</a>
+              </li>
+            </ul>
+            <div class="clearfix"></div>
+          </div>
+          <div class="x_content" id="formularioUsuario" style="display:none">
+            <input type="hidden" id="usuario_id" name="id" value="0">
+            <form id="demo-form" data-parsley-validate>
+              <div class="row">
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                  <label for="usuarioNome">Nome</label>
+                  <div class="input-group">
+                    <span class="input-group-addon">
+                          <span class="glyphicon glyphicon-user"></span>
+                      </span>
+                    <input type="text" name="usuarioNome" maxlength="200" onkeypress="clearClassBad('usuario_id_nome')"  id="usuario_id_nome" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                  <label for="usuarioEmail">Email</label>
+                  <div class="input-group">
+                    <span class="input-group-addon">
+                          <span class="fa fa-envelope"></span>
+                    </span>                    
+                    <input type="text" class="form-control" name="usuarioEmail" id="usuario_id_email"/>
+                  </div>
+                </div>
+                <div class="col-md-2 col-sm-2 col-cx-4">
+                  <label class="control-label">Data de cadastro</label></br>
+                  <div class='input-group date' id='cadastro'>
+                    <input type='text' class="form-control" name="cadastro" id="usuario_id_cadastro" readonly/>
+                    <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <label for="usuarioLogin">Login</label>
+                  <div class="input-group">
+                    <span class="input-group-addon">
+                          <span class="fa fa-lock"></span>
+                      </span>
+                    <input type="text" name="usuarioLogin" maxlength="200" onkeypress="clearClassBad('usuario_id_nome')"  id="usuario_id_usuario" class="form-control" />
+                  </div>
+                </div>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                  <label for="usuarioSenha">Senha</label>
+                  <div class="input-group">
+                    <span class="input-group-addon">
+                          <span class="fa fa-key"></span>
+                    </span>                    
+                    <input type="password" name="usuarioSenha" id="usuario_id_senha" class="form-control" />
+                  </div>
+                </div>
+              </div>
+              <div class="x-content pull-right">
+                <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeUsuario()">Cancelar</button>
+                <button type="button" class="btn btn-round btn-success" onclick="adicionarUsuario()">Salvar</button>
+              </div>
+            </form>           
+          </div>
+          <div class="table-responsive"  id="gradeUsuario">
+            <table class="table table-hover"  >
+              <thead>
+                <tr name="parse_table">
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 45%;" aria-sort="ascending">Usuario</th>
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 45%;" aria-sort="ascending">Nome</th>            
+                  <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 8%;">Ações</th>
+                </tr>
+              </thead>      
+              <tbody id="id_itens_usuarios">
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  
+</script>
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+{% endblock javascripts %}

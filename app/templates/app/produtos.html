@@ -1,0 +1,535 @@
+{% extends "app/base_site.html" %}
+
+{% block title %} Projects {% endblock title %}
+
+{% block stylesheets %}
+  {{ block.super }}
+{% endblock stylesheets %}
+
+{% block content %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+
+<script>
+  // Funçoes de Cliente
+  function botoesSalvarCancelar(id=0,data=0){
+    switch(id) {
+        case 0:
+          $('#produto_botoes_salvar').html('');
+          $('#produto_botoes_salvar').html(
+            '<button type="button" class="btn btn-round btn-danger" onclick="mostraGradeProduto()">Cancelar</button>            <button type="button" class="btn btn-round btn-success" onclick="addProduto()">Salvar</button>'
+            );
+          break;
+
+        case 1:
+          $('#produto_botoes_salvar').html('');
+          html_botoes = "<button type='button' class='btn btn-round btn-danger' onclick='mostraGradeProduto()'>Cancelar</button><button type='button' class='btn btn-round btn-success' onclick='addProduto(1,"+JSON.stringify(data)+")'>Salvar</button>"
+          $('#produto_botoes_salvar').html(html_botoes);
+          break;
+        }
+  }
+
+  function buscarProduto(){
+    $.ajax({
+      data: {
+        filtro : $('#id_get_entidade_produto').val(),
+      },
+      type: 'GET',
+      url:'/buscar/produto/'
+    }).success(function(data){
+      var texto_html = '';
+      for (i in data) {
+          var preco = 0;
+          var j = 0
+          var soma_preco = 0;
+          var n = parseInt(i) + 1;
+          texto_html = texto_html + '<tr>';
+            texto_html = texto_html + '<th scope="row">'+n+'</th>';
+            texto_html = texto_html + '<td>'+ data[i].detalhes.codigo +'</td>';
+            texto_html = texto_html + '<td>'+ data[i].nome +'-'+data[i].detalhes.marca +'</td>';
+            if (data[i].detalhes.estoque_atual){
+              texto_html = texto_html + '<td>'+ data[i].detalhes.estoque_atual +'</td>';
+            }
+            else{
+              texto_html = texto_html + '<td>-</td>'; 
+            }
+            for (k in data[i].detalhes.fornecedor){
+              preco_k = data[i].detalhes.fornecedor[k].preco;
+              soma_preco = soma_preco + parseInt(preco_k);
+              j++;
+            };
+            preco = parseInt(soma_preco)/j;
+            if (preco != 0){
+              texto_html = texto_html + '<td>'+ preco +'</td>';
+            }
+            else{
+              texto_html = texto_html + '<td> - </td>'; 
+            }
+            if (preco!=0 && data[i].detalhes.estoque_atual){
+              texto_html = texto_html + '<td>'+ preco*data[i].detalhes.estoque_atual +'</td>';
+            }
+            else{
+              texto_html = texto_html + '<td> - </td>'; 
+            }
+            texto_html = texto_html + '<td>';
+            var parametro_edit = "'editarProduto("+ JSON.stringify(data[i])+")'";
+            var parametro_hist = "'historicoProduto("+JSON.stringify(data[i].nome)+","+JSON.stringify(data[i].detalhes.marca)+")'";
+              texto_html = texto_html + '<i class="fa fa-history" aria-hidden="true" onclick='+parametro_hist+')></i> ';
+              texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'> </i> ';
+              texto_html = texto_html + '<i class="fa fa-trash" id="trash_'+n+'" aria-hidden="true" onclick= excluirProduto("'+ data[i]._id['$oid'] +'","'+n+'")></i>';
+            texto_html = texto_html + '</td>';
+          texto_html = texto_html + '</tr>';
+      }  
+      $('#id_itens_produto').html(texto_html);
+    }).fail(function(data){
+        alertar('Atenção','Não foi possível buscar a lista de produto </br> Tente novamente mais tarde','red','fa fa-warning');                          
+    });
+}
+
+function addProduto(flag=0, data1=0){
+  $('#spinner_modal').modal('show');
+  i = 1;
+  fornecedor_array = '['
+  fornecedores_selecionados = $('#produto_grade_fornecedor_body >tr>td>p');
+  fornecedores_selecionados.each(function(){
+    var $this = $(this);
+    fornecedor_array = fornecedor_array + '{';
+    fornecedor_array = fornecedor_array + '"_id":"'+ $this.attr("id") + '",';
+    fornecedor_array = fornecedor_array + '"nome":"'+$this.text() +'",';
+    fornecedor_array = fornecedor_array + '"preco":"'+$("#produto_id_preco_"+i).val() +'"';
+    fornecedor_array = fornecedor_array + '}';
+    if(i < $('#produto_grade_fornecedor_body >tr').length){
+      fornecedor_array = fornecedor_array + ','
+    }
+    i++
+  });
+  fornecedor_array = fornecedor_array + ']';
+  if ($("#produto_id_nome").val() == ''){
+      $('#spinner_modal').modal('hide');
+      $("#produto_id_nome").parent().addClass("bad");
+      alertar('ATENÇÂO','Preencha os campos corretamente','red', 'glyphicon glyphicon-alert');
+  }else{
+    $("#produto_id_nome").parent().removeClass("bad");
+    $.ajax({
+      data: { 
+        id_produto :  $('#produto_id').val(),
+        codigo :  $('#produto_id_codigo').val(),
+        nome : $("#produto_id_nome").val(),
+        unidade : $("#produto_id_unidade").val(),
+        data_cadastro : $("#produto_id_data_cadastro").val(),
+        estoque_minimo : $("#produto_id_estoque_mininmo").val(),
+        estoque_atual : $("#produto_id_estoque_atual").val(),
+        marca : $("#produto_id_marca").val(),
+        fornecedor : fornecedor_array,
+      },
+      type: 'POST',
+      url:'/adicionar/produto/'
+      }).success(function(data){
+        $('#spinner_modal').modal('hide');
+        $('#produto_id').val(data.result);
+        switch(flag) {
+        case 0:
+          mostraGradeProduto();
+          buscarProduto();
+          alertar('Sucesso','Cliente cadastrado com sucesso','green','fa fa-sucess');
+          break;
+
+        case 1:
+          buscarProduto();
+          alertar('Sucesso','Alteração salva com sucesso','green','fa fa-sucess');
+          editarProduto(JSON.stringify(data1));
+          break;
+        }       
+      }).fail(function(data){
+        $('#spinner_modal').modal('hide');
+        alertar('Atenção','Não foi possível salvar o registro </br> Tente novamente mais tarde','red','fa fa-warning');   
+    });
+  }
+  return 1;
+}
+
+function excluirProduto(id, n){
+  confirmar('Atenção',
+            'Deseja excluir este produto?',
+            'red',
+            'fa fa-warning',
+            function(){
+              $('#spinner_modal').modal('show');
+              var self = this;
+              self.close();
+             return $.ajax({
+                    data: {
+                        id : id,
+                      },
+                    type: 'POST',
+                    url:'/excluir/entidade/'
+                    }).success(function(data){
+                      $('#spinner_modal').modal('hide');
+                      $("#produto_btn_ok").click();
+                    }).fail(function(data){
+                        $('#spinner_modal').modal('hide');
+                        alertar('Atenção','Não foi possível excluir este cliente </br> Tente novamente mais tarde','red','fa fa-warning');
+                    });
+                  }
+  )
+}
+
+function editarProduto(data){
+  $('#produto_id').val(data._id['$oid']);
+  $('#produto_id_codigo').val(data.detalhes.codigo);
+  $('#produto_id_nome').val(data.nome);
+  $('#produto_id_data_cadastro').val(moment(data.detalhes.data_cadastro['$date']).format('DD/MM/YYYY'));
+  $("#produto_id_unidade").val(data.detalhes.unidade);
+  $("#produto_id_estoque_atual").val(data.detalhes.estoque_atual);
+  $("#produto_id_estoque_mininmo").val(data.detalhes.estoque_minimo);
+  $("#produto_id_marca").val(data.detalhes.marca).change();
+  fornecedor_html = "";
+  for (i in data.detalhes.fornecedor){
+    n =  parseInt(i)+parseInt(1);
+    fornecedor_html = fornecedor_html + '<tr>';
+    fornecedor_html = fornecedor_html + '<th scope="row">'+n+'</th>';
+    fornecedor_html = fornecedor_html + '<td><p id= "'+ data.detalhes.fornecedor[i]._id +'">'+ data.detalhes.fornecedor[i].nome +'</p></td>';
+     fornecedor_html = fornecedor_html + '<td><div class="input-group"><span class="input-group-addon"><span class="fa fa-dollar"></span></span><input type="number" maxlength="18" title="" id="produto_id_preco_'+n+'" class="form-control" value="'+data.detalhes.fornecedor[i].preco+'"/></div></td>';
+    fornecedor_html = fornecedor_html + '<td>';
+    var parametro_excluir_fornecedor = '"'+ n +'",'+JSON.stringify(data);
+      fornecedor_html = fornecedor_html + "<i class='fa fa-trash' aria-hidden='true' onclick= 'excluirFornecedor("+parametro_excluir_fornecedor+")'></i>";
+    fornecedor_html = fornecedor_html + '</td>';
+    fornecedor_html = fornecedor_html + '</tr>';
+  };
+  $('#produto_grade_fornecedor_body').append(fornecedor_html);
+  historico_html = "";
+  historico_html = "<a onclick='historicoProduto("+JSON.stringify(data.nome)+","+JSON.stringify(data.detalhes.marca)+")'><i class='fa fa-history'></i> Histórico</a>";
+  $('#produto_btn_historico_modal').append(historico_html);  
+  botoesSalvarCancelar(1,JSON.stringify(data));
+  mostraFormularioProduto(0);
+}
+
+function clearFormProduto(){
+  $('#produto_id').val('0');
+  $('#produto_id_codigo').val('');
+  $('#produto_id_nome').val('');
+  $('#produto_id_data_cadastro').val('');
+  $("#produto_id_unidade").val('');
+  $("#produto_id_estoque_atual").val('');
+  $("#produto_id_estoque_mininmo").val('');  
+  $('#produto_grade_fornecedor_body').html('');
+  $('#produto_btn_historico_modal').html('');
+  $("#produto_id_marca").val('');
+}
+
+function mostraGradeProduto(){
+  $("#produto_id_nome").parent().removeClass("bad");
+  clearFormProduto();
+  $('#gradeProduto').show();
+  $('#btnFormulaProduto').show();
+
+  $('#btnGradeProduto').hide();
+  $('#formularioProduto').hide();
+  $('#produtoFornecedores').hide();
+  botoesSalvarCancelar();
+}
+
+
+function mostraFormularioProduto(edit){
+  carregaMarca('produto_marcas');
+  if (edit==1){
+    $('#produto_id').val('0');
+    clearFormProduto();
+  }
+  $('#gradeProduto').hide();
+  $('#btnFormulaProduto').hide();      
+
+  $('#btnGradeProduto').show();
+  $('#formularioProduto').show();
+  $('#produtoFornecedores').show();
+}   
+ 
+
+function mostrarGradeFornecedor(){
+  $('#contato_id_fornecedor').val('0');
+  $('#produto_grade_fornecedor').show();
+  $('#produto_btn_formulario_fornecedor').show();
+
+  $('#produto_btn_grade_fornecedor').hide();
+  $('#produto_formulario_fornecedor').hide();
+}
+
+function mostrarFormularioFornecedor(){
+  $('#produto_grade_fornecedor').hide();
+  $('#produto_btn_formulario_fornecedor').hide();      
+
+  $('#produto_btn_grade_fornecedor').show();
+  $('#produto_formulario_fornecedor').show(); 
+}
+
+function excluirFornecedor(id,data){
+  confirmar('Atenção',
+            'Deseja excluir este fornecedor?',
+            'red',
+            'fa fa-warning',
+            function(){
+              fornecedor_html = ""
+              i = 1;
+              fornecedores_selecionados = $('#produto_grade_fornecedor_body >tr>td>p');
+              fornecedores_selecionados.each(function(){
+                var $this = $(this);
+                if(id != i){
+                  fornecedor_html = fornecedor_html + '<tr>';
+                  fornecedor_html = fornecedor_html + '<th scope="row">'+i+'</th>';
+                  fornecedor_html = fornecedor_html + '<td><p id="'+ $this.val() +'">'+ $this.text() +'</p></td>';
+                   fornecedor_html = fornecedor_html + '<td><div class="input-group"><span class="input-group-addon"><span class="fa fa-dollar"></span></span><input type="number" maxlength="18" title="" id="produto_id_preco_'+i+'" class="form-control"/></div></td>';
+                  fornecedor_html = fornecedor_html + '<td>';
+                    fornecedor_html = fornecedor_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirFornecedor("'+i+'")></i>';
+                  fornecedor_html = fornecedor_html + '</td>';
+                  fornecedor_html = fornecedor_html + '</tr>';
+                  i++
+                }
+              });
+              $('#produto_grade_fornecedor_body').html('');
+              $('#produto_grade_fornecedor_body').html(fornecedor_html);
+              addProduto(1,JSON.stringify(data));                      
+            }
+  )
+}
+
+function adicionarFornecedor() {
+  fornecedor_html = ""
+  i = $('#produto_grade_fornecedor_body >tr').length + 1;
+  fornecedores_selecionados = $('#produto_fornecedor option:selected');
+  fornecedores_selecionados.each(function(){
+    var $this = $(this);
+    fornecedor_html = fornecedor_html + '<tr>';
+    fornecedor_html = fornecedor_html + '<th scope="row">'+i+'</th>';
+    fornecedor_html = fornecedor_html + '<td><p id="'+ $this.val() +'">'+ $this.text() +'</p></td>';
+    fornecedor_html = fornecedor_html + '<td><div class="input-group"><span class="input-group-addon"><span class="fa fa-dollar"></span></span><input type="number" maxlength="18" title="" id="produto_id_preco_'+i+'" class="form-control"/></div></td>';
+    fornecedor_html = fornecedor_html + '<td>';
+      fornecedor_html = fornecedor_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirFornecedor("'+i+'")></i>';
+    fornecedor_html = fornecedor_html + '</td>';
+    fornecedor_html = fornecedor_html + '</tr>';
+    i++
+  });
+  $('#produto_grade_fornecedor_body').append(fornecedor_html);
+  mostrarGradeFornecedor();
+}
+
+$(function () {
+    buscarProduto();
+   });
+
+
+</script>
+<div class="right_col" role="main">
+  <div class="container body">
+    <div class="page-title">
+      <div class="title_left">                          
+        <h1>Produto</h1>
+      </div>    
+      <div class="title_right">
+        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+          <div class="input-group">
+            <input type="text" id="id_get_entidade_produto" class="form-control" placeholder="Pesquisar...">
+            <span class="input-group-btn">
+              <button id="produto_btn_ok" class="btn btn-default" type="button" onclick="buscarProduto()">Ok!</button>
+            </span>
+          </div> 
+        </div>
+      </div>
+    </div>
+  </br>
+  <div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+      <div class="x_panel">
+        <div class="x_title">
+          <h2>Formulário de cadastro de produto</h2>
+          <ul class="nav navbar-right panel_toolbox">
+
+            <li id ="btnGradeProduto" style="display:none">
+              <a onclick="mostraGradeProduto()"><i class="fa fa-list"></i> Grade</a>
+            </li>
+            <li id ="btnFormulaProduto">
+              <a onclick="mostraFormularioProduto(1)"><i class="fa fa-list"></i> Novo</a>
+            </li>     
+          </ul>
+          <div class="clearfix"></div>
+        </div>
+        <div class="x_content" id="formularioProduto" style="display:none">
+          <input type="hidden" id="produto_id" name="id" value="0">                  
+          <form id="demo-form" data-parsley-validate>
+            <div class="row">
+              <div class="col-md-3 col-sm-3 col-xs-6">
+                <label for="codigoProduto"></span>Código</label>
+                <div class="input-group">                
+                  <span class="input-group-addon">
+                      <span class="fa fa-code"></span>
+                  </span>
+                  <input type="number" name="codigoProduto" onkeypress="clearClassBad('produto_id_codigo')" maxlength="200" title="" id="produto_id_codigo" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-6 col-sm-6 col-xs-12">
+                <label for="descricaoProduto"></span>Descrição do Produto</label>
+                <div class="input-group">                
+                  <span class="input-group-addon">
+                      <span class="glyphicon glyphicon-user"></span>
+                  </span>
+                  <input type="text" name="descricaoProduto" onkeypress="clearClassBad('produto_id_descricao')" maxlength="200" title="" id="produto_id_nome" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-cx-6">
+                <label class="control-label">Data de cadastro</label></br>
+                <div class='input-group date' id='cadastro'>
+                  <input type='text' class="form-control" name="cadastro" id="produto_id_data_cadastro" readonly/>
+                  <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <label class="control-label">Unidade</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-thumb-tack"></span>
+                  </span>
+                  <select id="produto_id_unidade" class="form-control" >
+                    <option>Cartela com 50</option>
+                    <option>Kilo</option>
+                    <option>Litros</option>
+                    <option>Metro</option>
+                    <option>Pacote</option>
+                    <option>Par</option>
+                    <option>Peça</option>
+                    <option>Rolo</option>
+                    <option>Rolo 300m</option>
+                    <option>Unidade</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <label class="control-label">Estoque Mínimo</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-cubes"></span>
+                  </span>
+                  <input type="number" maxlength="18" title="" id="produto_id_estoque_mininmo" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <label class="control-label">Estoque Atual</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-cubes"></span>
+                  </span>
+                  <input type="number" maxlength="18" title="" id="produto_id_estoque_atual" class="form-control" />
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <label class="control-label">Marca</label>
+                <div class="input-group">
+                  <span class="input-group-addon">
+                    <span class="fa fa-cubes"></span>
+                  </span>
+                  <input list="produto_marcas" id="produto_id_marca" class="form-control" />
+                  <datalist id="produto_marcas">
+                    <option data-value="0">Chrome</option>
+                    <option data-value="1">Firefox</option>
+                    <option data-value="2">Internet Explorer</option>
+                    <option data-value="3">Opera</option>
+                    <option data-value="4">Safari</option>
+                    <option data-value="5">Microsoft Edge</option>
+                  </datalist>
+                </div>
+              </div>
+            </div>           
+          </form>
+        </div>
+        <div class="row" id="produtoFornecedores" style="display:none">
+          <div class="col-md-12 col-xs-12">
+            <div class="x_panel">
+              <div class="x_title">
+                <h2>Fornecedores</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                  <li id ="produto_btn_historico_modal">
+                  </li>
+                  <li id ="produto_btn_grade_fornecedor" style="display:none">
+                    <a onclick="mostrarGradeFornecedor()"><i class="fa fa-list"></i> Grade</a>
+                  </li>
+                  <li id ="produto_btn_formulario_fornecedor">
+                    <a onclick="mostrarFormularioFornecedor()"><i class="fa fa-list"></i> Adicionar</a>
+                  </li>
+                </ul>
+                <div class="clearfix"></div>
+              </div>
+              <div class="x_content"  id="produto_formulario_fornecedor" style="display:none"><br/>
+                <div class="row">
+                  <input type="hidden" id="produto_id_fornecedor" name="id" value="0">
+                  <div class="col-md-12 col-sm-12 col-xs-12 row-fluid">
+                    <select class="selectpicker form-control" data-live-search="true" id="produto_fornecedor" style="width: 100%;" multiple>
+                    </select>             
+                  </div>
+                </div>
+                </br>
+                <div class="x-content pull-right">
+                  <button type="button" class="btn btn-round btn-default" onclick="adicionarFornecedor()">Adicionar</button>
+                </div>
+              </div>
+              <div class="table-responsive"  id="produto_grade_fornecedor">
+                <table class="table table-hover" >
+                  <thead>
+                    <tr>
+                      <th style="width: 2%">#</th>
+                      <th style="width: 63%;">Fornecedor</th>
+                      <th style="width: 30%;">Preço</th>
+                      <th style="width: 5%;">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody id="produto_grade_fornecedor_body">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>          
+          <br/>
+          <div class="x-content pull-right" id="produto_botoes_salvar">
+            <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeProduto()">Cancelar</button>
+            <button type="button" class="btn btn-round btn-success" onclick="addProduto()">Salvar</button>
+          </div>
+        </div>
+        <div class="table-responsive"  id="gradeProduto">
+          <table class="table table-hover"  >
+            <thead>
+              <tr name="parse_table">
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Código</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 40%;" aria-sort="ascending">Produto</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 16%;" aria-sort="ascending">Estoque</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 16%;" aria-sort="ascending">Preço Médio</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 16%;" aria-sort="ascending">Preço Total</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;">Ações</th>
+              </tr>
+            </thead>      
+            <tbody id="id_itens_produto">
+            </tbody>
+          </table>
+        </div>
+        </div> 
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% block javascripts %}
+  {{ block.super }}
+{% endblock javascripts %}
+<script type="text/javascript">
+        $(document).ready(function() {
+        carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
+        carregaMarca('produto_marcas');
+      });
+        $('#id_get_entidade_produto').on('keypress', function (e) {
+               if(e.which === 13){
+                buscarProduto()
+               }
+         });
+</script>
+{% endblock content %}
