@@ -1,6 +1,6 @@
 certifi==2018.11.29
 Django==2.1.2
-django-mongoengine==0.3
+git+https://github.com/MongoEngine/django-mongoengine.git
 gunicorn==19.9.0
 mongoengine==0.15.3
 pipenv==2018.11.26
