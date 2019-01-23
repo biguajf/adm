@@ -31,9 +31,16 @@ urlpatterns = [
     url(r'^usuario/?$',views.usuario),
     url(r'^adicionar/usuario/?$',views.usuario),
     url(r'^buscar/usuario/?$',views.buscarUsuario),
+    url(r'^excluir/usuario/?$',views.excluirUsuario),   
     url(r'^compra/?$',views.compras),
     url(r'^adicionar/compra/?$',views.compras),
     url(r'^buscar/compra/?$',views.buscarCompra),
     url(r'^excluir/compra/?$',views.excluirCompra),
-
+    url(r'^adicionar/funcionario/?$',views.funcionarios),
+    url(r'^funcionario/?$',views.funcionarios),
+    url(r'^buscar/funcionario/?$',views.buscarFuncionario),
+    url(r'^saida/?$',views.saidas),
+    url(r'^adicionar/saida/?$',views.saidas),
+    url(r'^buscar/saida/?$',views.buscarSaida),
+    url(r'^excluir/saida/?$',views.excluirSaida),
 ]

@@ -6,6 +6,7 @@ from django_mongoengine import Document,DynamicDocument,EmbeddedDocument, fields
 from mongoengine import GenericReferenceField, ReferenceField as MongoReferenceField
 from django_mongoengine.mongo_auth.models import User
 import datetime
+import bson
 
 # Create your models here.
 class Contato(EmbeddedDocument):
@@ -83,6 +84,11 @@ class Produto(EmbeddedDocument):
 	preco          = fields.StringField(max_length = 18,blank = True)
 	marca          = fields.StringField(max_length = 18,blank = True)
 
+class Funcionario(EmbeddedDocument):
+	_id            = fields.StringField(max_length=200,blank = True)
+	cargo          = fields.StringField(max_length=200,blank = True)
+	salario         = fields.StringField(max_length=200,blank = True)
+
 class Cliente(EmbeddedDocument):
 	descricao = fields.StringField(max_length=20, default ='CLIENTE')
 
@@ -143,8 +149,17 @@ class Entidade(EntidadeAbstract):
 
 class Compra(Document):
 	data_cadastro = fields.DateTimeField(default = datetime.datetime.now())
-	fornecedor_id    = fields.StringField(max_length=200,blank = True)
+	fornecedor_id = fields.StringField(max_length=200,blank = True)
 	fornecedor    = fields.StringField(max_length=200,blank = True)
+	total         = fields.StringField(max_length=200,blank = True)
+	produtos      = fields.DynamicField()
+
+class Saida(Document):
+	data_cadastro = fields.DateTimeField(default = datetime.datetime.now())
+	fornecedor_id = fields.StringField(max_length=200,blank = True)
+	fornecedor    = fields.StringField(max_length=200,blank = True)
+	cliente_id    = fields.StringField(max_length=200,blank = True)
+	cliente       = fields.StringField(max_length=200,blank = True)
 	total         = fields.StringField(max_length=200,blank = True)
 	produtos      = fields.DynamicField()
 				
@@ -158,6 +173,7 @@ class Usuario(EntidadeAbstract):
 	usuario      = fields.StringField(max_length=40)
 	senha        = fields.StringField(max_length=200)
 	nome         = fields.StringField(max_length=200)
+	user_permissions  = fields.StringField(max_length=200)
 	grupo_acesso = fields.ReferenceField(GrupoAcesso,blank = True)
 	userid       = fields.DynamicField()
 	email        = fields.StringField(max_length = 200)
@@ -176,6 +192,7 @@ class Usuario(EntidadeAbstract):
 			temp = User.objects.get(id = self.userid)
 			temp.set_password(self.senha)
 			temp.save()
+			temp.update(user_permissions = bson.dbref.DBRef('permissions', [self.user_permissions]))
 		#
 		self.senha = temp.password
 		#

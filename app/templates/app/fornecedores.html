@@ -11,7 +11,6 @@
 
 <script> 
   // Funçoes de Cliente
-  var edit = 0;
   function buscarFornecedor(){
     $.ajax({
       data: {
@@ -140,7 +139,6 @@
   }
 
 function editarFornecedor(data){
-  edit = 1;
   $('#fornecedor_id').val(data._id['$oid']);
 
   if (data.ativo==true){
@@ -203,7 +201,7 @@ function editarFornecedor(data){
     contato_html = contato_html + '<td>'+ data.contato[i].telefone +'</td>';
     var parametro_edit_cont = "'"+ n +"','"+ data.contato[i].nome +"','"+ data.contato[i].email +"','"+ data.contato[i].telefone +"'";
     contato_html = contato_html + '<td><i class="fa fa-pencil-square-o" aria-hidden="true" onclick="editarContato('+ parametro_edit_cont +')"></i>';
-    var parametro_excluir_cont = '"'+ n +'","'+ data._id['$oid'] +'","fornecedor","Fornecedor"';
+    var parametro_excluir_cont = "'"+ n +"','"+ data._id['$oid'] +"','fornecedor','Fornecedor'";
     contato_html = contato_html + '<i class="fa fa-trash" aria-hidden="true" onclick="excluirContato('+ parametro_excluir_cont +')"></i>';
     contato_html = contato_html + '</td>';
     contato_html = contato_html + '</tr>';
@@ -274,8 +272,7 @@ function clearFormFornecedor(){
   $("#fornecedor_id_telefone_contato").val('');
 }
 
-function mostraForm(){
-  edit = 0;
+function mostraGradeFornecedor(){
   clearFormFornecedor();
   mostrarGradeEndereco('fornecedor');
   mostrarGradeContato('fornecedor');
@@ -291,27 +288,6 @@ function mostraForm(){
   $('#fornecedor_contatos').html('');
   $('#fornecedor_enderecos').html('');
   $('#fornecedor_grade_produto_body').html('');
-}
-
-function mostraGradeFornecedor(){
-  if(edit == 0){
-    mostraForm();
-  } else{
-    perguntar('Atenção',
-            'Deseja salvar alterações antes de sair?',
-            'green',
-            'fa fa-warning',
-            function(){
-                gravarFornecedor();
-                return
-            },
-            function(){
-                mostraForm();
-                return
-            }
-        )
-    
-  }
 }
 
 function mostraTipoFornecedor(tipo){
@@ -863,9 +839,6 @@ $('#id_get_entidade_fornecedor').on('keypress', function (e) {
   
 <script type="text/javascript">
 $(document).ready(function() {
-    //carregarContas(['fornecedor_id_conta_cr'],2);
-
-    //$('.selectpicker').selectpicker("refresh");
     $('.tel').mask('(00) 00000-0009');
     $('.cnpj').mask('00.000.000/0000-00', {reverse: true});
     $('.cpf').mask('000.000.000-00', {reverse: true});

@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app'
+    'app',
+    'rest_framework'
 ]
 
 REST_FRAMEWORK = {
@@ -98,10 +99,10 @@ MONGODB_DATABASES = {
         #"username": 'lumax',
         #"password": '_#l1m2x#_',
 
-        "name": 'lumax',
-        "host":"ds053459.mlab.com:53459",
-        "username": 'lumax',
-        "password": 'lumax123',
+        "name": 'lumaxdata',
+        "host":"ds033103.mlab.com:33103",
+        "username": 'lumaxdata',
+        "password": 'lumaxdata123',
         
         "tz_aware": False, # if you using timezones in django (USE_TZ = True)
     },

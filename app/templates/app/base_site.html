@@ -4,6 +4,7 @@
     {% block head %}
       {% block meta %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel="sortcut icon" href="/static/images/csv_export_ico.ico" type="image/x-icon" />;
         <!-- Meta, title, CSS, favicons, etc. -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -44,7 +45,7 @@
         <div class="main_container">
 
           {% block sidebar %}
-            <div class="col-md-3 left_col {% block sidebar_class %} {% endblock sidebar_class %}">
+            <div class="col-md-3 left_col {% block sidebar_class %} {% endblock sidebar_class %} nav-md menu_fixed">
               {% include "app/sidebar.html" %}
             </div>
           {% endblock sidebar %}
@@ -83,7 +84,7 @@
           </div>
 
           {% block footer %}
-            <footer>
+            <footer >
               {% include "app/footer.html" %}
             </footer>
           {% endblock footer %}

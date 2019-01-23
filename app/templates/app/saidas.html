@@ -7,441 +7,300 @@
 {% endblock stylesheets %}
 
 {% block content %}
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
 <!--
 
 -->
 <script>
-  // Funçoes de Cliente
-  
-  function carregarGradeProduto(){
-    $.ajax({
-      data: {
-        filtro : $('#id_get_entidade_cliente').val(),
-        empresa : '{{empresaUsuario.id}}'
-      },
-      type: 'GET',
-      url:'/cadastros/clientes/buscar/'
-    }).success(function(data){
-      var texto_html = '';
-      for (i in data) { 
-          var n = parseInt(i) + 1;
-          texto_html = texto_html + '<tr>';
-            texto_html = texto_html + '<th scope="row">'+n+'</th>';
-            if (data[i].ativo==true){
-              texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" checked/></td>';
-            }
-            else{
-              texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" /></td>';
-            }
-            texto_html = texto_html + '<td>'+data[i].tipo_pessoa+'</td>';
-            texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
-            if (data[i].nome_fantasia){
-              texto_html = texto_html + '<td>'+ data[i].nome_fantasia +'</td>';
-            }
-            else{
-              texto_html = texto_html + '<td></td>'; 
-            }
-            texto_html = texto_html + '<td>'+data[i].tipo.status_credito+'</td>';
-            texto_html = texto_html + '<td>';
-            var parametro_edit = "'editarCliente("+ JSON.stringify(data[i])+")'";
-              texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
-              texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirCliente("'+ data[i]._id['$oid'] +'")></i>';
-            texto_html = texto_html + '</td>';
-          texto_html = texto_html + '</tr>';
-      }  
-      $('#id_itens_clientes').html(texto_html);
-    }).fail(function(data){
-        alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
-    });
+
+function buscarSaida(){
+  $.ajax({
+    data: {
+      filtro : $('#id_get_compra').val(),
+    },
+    type: 'GET',
+    url:'/buscar/saida/'
+  }).success(function(data){
+    var texto_html = '';
+    for (i in data) { 
+        var n = parseInt(i) + 1;
+        texto_html = texto_html + '<tr>';
+          texto_html = texto_html + '<th scope="row">'+n+'</th>';
+          texto_html = texto_html + '<td>'+ moment(data[i].data_cadastro['$date']).format('DD/MM/YYYY')+'</td>';
+          texto_html = texto_html + '<td>'+ data[i].cliente +'</td>';
+          texto_html = texto_html + '<td>'+data[i].total+'</td>';
+          texto_html = texto_html + '<td>';
+          var parametro_edit = "'editarSaida("+ JSON.stringify(data[i])+")'";
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
+            texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirSaida("'+ data[i]._id['$oid'] +'")></i>';
+          texto_html = texto_html + '</td>';
+        texto_html = texto_html + '</tr>';
+    }  
+    $('#id_itens_compras').html(texto_html);
+  }).fail(function(data){
+      alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
+  });
 }
 
-function addCliente(flag=0){
-  if ($("#cliente_id_nome").val() == ''){
-    if (flag == 0){
-      $("#cliente_id_nome").parent().addClass("bad");
-      alertar('ATENÇÂO','Preencha os campos corretamente','red', 'glyphicon glyphicon-alert');
-    }else{
-      $("#cliente_id_nome").parent().addClass("bad");
-      alertar('ATENÇÂO','É preciso preencher o cadastro do cliente','red', 'glyphicon glyphicon-alert');
-    }
+function adicionarSaida(){
+  $('#spinner_modal').modal('show');
+  if ($("#compra_id_total").val() == ''){
+    alertar('ATENÇÂO','Insira os produtos comprados','red', 'glyphicon glyphicon-alert');
   }else{
+    i = 1;
+    produto_array = '['
+    produtos_selecionados = $('#compra_id_body_produtos >tr');
+    produtos_selecionados.each(function(){
+      produto_array = produto_array + '{';
+      produto_array = produto_array + '"produto":"'+$('#body_id_produto_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"fornecedor":"'+$('#body_id_fornecedor_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"quantidade":"'+$('#body_id_quantidade_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"unidade":"'+$('#body_id_unidade_'+i).attr("valor")+'",';
+      produto_array = produto_array + '"preco_unitario":"'+$('#body_id_preco_unitario'+i).attr("valor")+'",';
+      produto_array = produto_array + '"preco_total":"'+$('#body_id_preco_total'+i).attr("valor")+'"';
+      produto_array = produto_array + '}';
+      console.log(i);
+      if(i < $('#compra_id_body_produtos >tr').length){
+        console.log($('#compra_id_body_produtos >tr').length);
+        produto_array = produto_array + ','
+      }
+      i++
+    });
+    produto_array = produto_array + ']';
     $.ajax({
       data: {
-        cliente : {
-          id_cliente :  $('#id_Cliente').val(),
-          ativo : $('#cliente_id_ativo').val(),
-          tipo_pessoa : $("#cliente_id_tipo").val(),
-          CNPJ : $("#cliente_id_CNPJ").val(),
-          nome : $("#cliente_id_nome").val(),
-          nome_fantasia : $("#cliente_id_nome_fantasia").val(),
-          inscricao_estadual : $("#cliente_id_inscestadual").val(),
-          inscricao_municipal : $("#cliente_id_inscmunicipal").val(),
-          data_fundacao : $("#cliente_data_fundacao").val(),
-          CRT : $("#cliente_id_crt").val(),
-          CPF : $("#cliente_id_CPF").val(),
-          RG : $("#cliente_id_rg").val(),
-          registro : $("#cliente_id_registro").val(),
-          data_nascimento : moment($('#cliente_data_nascimento').data("DateTimePicker").date()).format('DD/MM/YYYY'),
-          sexo : $("#cliente_id_sexo").val(),
-          estado_civil : $("#cliente_id_estado_civil").val(),
-          nome_pai : $("#cliente_id_nome_pai").val(),
-          nome_mae : $("#cliente_id_nome_mae").val(),
-          grau_instrucao : $("#cliente_id_grau_instrucao").val(),
-          complemento_instrucao : $("#cliente_id_compl_instrucao").val(),
-          instituicao_ensino : $("#cliente_id_inst_ensino").val(),
-          RA : $("#cliente_id_ra").val(),
-          ano_letivo : $("#cliente_id_ano_letivo").val(),
-          periodo : $("#cliente_id_periodo").val(),
-          status_credito : $("#cliente_id_status_credito").val(),
-          limite_credito : ($("#cliente_id_limite_credito").val()) ? parseFloat($("#cliente_id_limite_credito").val()) : 0,          
-          observacao : $("#cliente_obs").val()
-        },
-        empresa : '{{empresaUsuario.id}}'
+        id  : $("#id_Compra").val(),
+        cliente    : $("#saida_cliente").val(),
+        total      : $("#compra_id_total").val(),
+        produtos   : produto_array
       },
       type: 'POST',
-      url:'/cadastros/clientes/'
+      url:'/adicionar/saida/'
       }).success(function(data){
-        $('#id_Cliente').val(data.result);
-        alertar('Sucesso','Cliente cadastrado com sucesso','green','fa fa-sucess');
-        switch(flag) {
-          case 0:
-              mostraGradeSaida();
-              carregarGradeSaida();
-            break;
-
-          case 1:
-              adicionarEndereco("Cliente", "cliente");
-            break;
-
-          case 2:
-              adicionarContato('/cadastros/clientes/','#idContato_cliente','#cliente_id_nomecontato','#cliente_id_emailcontato','#cliente_id_telefonecontato','#id_Cliente','clientes','cliente_contatos', 'idContato_cliente', 'gradeContato_clientes', 'btnFormularioContatoClientes', 'btnGradeContatoClientes', 'formularioContatoCliente', 'Cliente');
-            break;
-        }
-        
+        $('#spinner_modal').modal('hide');
+        alertar('Sucesso','Compra cadastrada com sucesso','green','fa fa-sucess');
+        $("#cliente_btn_ok").click();
+        mostraGradeSaida();
       }).fail(function(data){
-        alertar('Atenção','Não foi possível salvar o registro </br> Tente novamente mais tarde','red','fa fa-warning');                          
+        $('#spinner_modal').modal('hide');
+        alertar('Atenção','Não foi possível salvar o registro </br> Tente novamente mais tarde','red','fa fa-warning');
     });
   }
   return 1;
 }
 
-function excluirCliente(id){
+function excluirSaida(id){
   confirmar('Atenção',
-            'Deseja excluir este cliente?',
+            'Deseja excluir esta compra?',
             'red',
             'fa fa-warning',
             function(){
+              $('#spinner_modal').modal('show');
               var self = this;
               self.close();
              return $.ajax({
                     data: {
-                        csrfmiddlewaretoken: '{{token}}',
-                        deletar : {
-                          idDel : id
-                        },
-                        empresa : '{{empresaUsuario.id}}'
+                        id : id,
                       },
                     type: 'POST',
-                    url:'/cadastros/clientes/excluir/'
+                    url:'/excluir/saida/'
                     }).success(function(data){
+                      $('#spinner_modal').modal('hide');
                       $("#cliente_btn_ok").click();
                     }).fail(function(data){
-                        alertar('Atenção','Não foi possível excluir este cliente </br> Tente novamente mais tarde','red','fa fa-warning');
+                        $('#spinner_modal').modal('hide');
+                        alertar('Atenção','Não foi possível excluir este usuario </br> Tente novamente mais tarde','red','fa fa-warning');
                     });
                   }
   )
 }
 
-function editarCliente(data){
-  $('#id_Cliente').val(data._id['$oid']);
-
-  if (data.ativo==true){
-    $('#cliente_id_ativo').prop("checked", true );
-  }
-  else{
-    $('#cliente_id_ativo').prop("checked", false );
-  }
-
-  $('#cliente_id_tipo').val(data.tipo_pessoa).trigger('change');
-  $('#cliente_id_nome').val(data.nome);
-  $('#cliente_id_data_cadastro').val(moment(data.data_cadastro['$date']).format('DD/MM/YYYY'));
-  $("#cliente_id_status_credito").val(data.tipo.status_credito);
-  $("#cliente_id_limite_credito").val(data.tipo.limite_credito); 
-  $("#cliente_obs").val(data.observacao);
-  if (data.tipo_pessoa == 'PJ'){
-  $('#cliente_id_CNPJ').val(data.CNPJ);
-    $('#cliente_id_nome_fantasia').val(data.nome_fantasia);
-    $('#cliente_id_inscestadual').val(data.inscricao_estadual);
-    $('#cliente_id_inscmunicipal').val(data.inscricao_municipal);
-    $('#cliente_data_fundacao').val(data.data_fundacao);
-    $('#cliente_id_crt').val(data.CRT);
-  }else if(data.tipo_pessoa == 'PF'){
-    $("#cliente_id_CPF").val(data.CPF);
-    $("#cliente_id_rg").val(data.RG);
-    $("#cliente_id_registro").val(data.registro);
-    $("#cliente_data_nascimento_input").val(moment(data.data_nascimento['$date']).format('DD/MM/YYYY'));
-    $("#cliente_id_sexo").val(data.sexo);
-    $("#cliente_id_estado_civil").val(data.estado_civil);
-    $("#cliente_id_nome_pai").val(data.nome_pai);
-    $("#cliente_id_nome_mae").val(data.nome_mae);
-    $("#cliente_id_grau_instrucao").val(data.grau_instrucao);
-    $("#cliente_id_compl_instrucao").val(data.complemento_instrucao);
-    $("#cliente_id_inst_ensino").val(data.instituicao_ensino);
-    $("#cliente_id_ra").val(data.RA);
-    $("#cliente_id_ano_letivo").val(data.ano_letivo);
-    $("#cliente_id_periodo").val(data.periodo);
-  }
-  
-  var contato_html = '';
-  var endereco_html = '';    
-  for (i in data.contato){
-    var n = parseInt(i) + 1;
-    contato_html = contato_html + '<tr>';
-    contato_html = contato_html + '<th scope="row">'+n+'</th>';
-    contato_html = contato_html + '<td>'+ data.contato[i].nome +'</td>';
-    contato_html = contato_html + '<td>'+ data.contato[i].email +'</td>';
-    contato_html = contato_html + '<td>'+ data.contato[i].telefone +'</td>';
-    var parametro_edit_cont = "'"+ n +"','"+ data.contato[i].nome +"','"+ data.contato[i].email +"','"+ data.contato[i].telefone +"'";
-    contato_html = contato_html + '<td><i class="fa fa-pencil-square-o" aria-hidden="true" onclick="editarContatoCliente('+ parametro_edit_cont +')"></i>';      
-    var parametro_excluir_cont = "'"+ n +"','"+ data._id['$oid'] +"'";
-    parametro_excluir_cont =  parametro_excluir_cont + "," + "'clientes'"+ "," + "'cliente_contatos'" +"," + "'idContato_cliente'"+","+"'gradeContato_clientes'"+","+"'btnFormularioContatoClientes'"+"," +"'btnGradeContatoClientes'"+","+"'formularioContatoCliente'";
-    contato_html = contato_html + '<i class="fa fa-trash" aria-hidden="true" onclick="excluirContato('+ parametro_excluir_cont +')"></i>';
-    contato_html = contato_html + '</td>';
-    contato_html = contato_html + '</tr>';
-  }
-  for (j in data.endereco){
-    var n = parseInt(j) + 1;
-    endereco_html = endereco_html + '<tr>';
-    endereco_html = endereco_html + '<th scope="row">'+n+'</th>';
-    endereco_html = endereco_html + '<td>'+ data.endereco[j].tipo +'</td>';
-    endereco_html = endereco_html + '<td>'+ data.endereco[j].tipo_logradouro+' '+data.endereco[j].logradouro+'</td>';
-    endereco_html = endereco_html + '<td>'+ data.endereco[j].numero +'</td>';
-    endereco_html = endereco_html + '<td>'+ data.endereco[j].bairro +'</td>';
-    endereco_html = endereco_html + '<td>'+ data.endereco[j].cidade +'</td>';
-    var parametro_edit_end = "'editarEnderecoCliente("+ n +","+ JSON.stringify(data.endereco[j])+")'";
-    endereco_html = endereco_html + '<td><i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+parametro_edit_end +'></i>';      
-    var parametro_excluir_end = "'"+ n +"','"+ data._id['$oid'] +"'";
-    endereco_html = endereco_html + '<i class="fa fa-trash" aria-hidden="true" onclick="excluirEnderecoCliente('+ parametro_excluir_end +')"></i>';
-    endereco_html = endereco_html + '</td>';
-    endereco_html = endereco_html + '</tr>';
-  }
-  $('#cliente_contatos').html(contato_html);
-  $('#cliente_enderecos').html(endereco_html);
-  $('#cliente_contatos').show();
-  $('#cliente_enderecos').show();
-  mostraTipoCliente(data.tipo_pessoa);  
+function editarSaida(data){
+  $('#id_Compra').val(data._id['$oid']);
+  $('#cliente_id_data_cadastro').val(moment(data.data_cadastro['$date']).format('DD/MM/YYYY'))
+  $('#produto_fornecedor').val(data.fornecedor_id).trigger('change');
+  $('#saida_cliente').val(data.cliente_id).trigger('change');
+  var txt = '';
+  var n = 1;
+  for (i in data.produtos){
+    txt = '<tr>';
+    txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+    txt = txt + '<td id="body_id_fornecedor_'+n+'" valor="'+data.produtos[i].fornecedor+'">'+ data.produtos[i].fornecedor +'</td>';
+    txt = txt + '<td id="body_id_produto_'+n+'" valor="'+data.produtos[i].produto+'">'+ data.produtos[i].produto +'</td>';
+    txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+data.produtos[i].quantidade+'">'+data.produtos[i].quantidade+'</td>';
+    txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+data.produtos[i].unidade+'">'+data.produtos[i].unidade+'</td>';
+    txt = txt + '<td style="text-align: right;" valor="'+data.produtos[i].preco_unitario+'" id="body_id_preco_unitario'+n+'">R$ '+formatarValor(parseFloat(data.produtos[i].preco_unitario))+'</td>';
+    txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+data.produtos[i].preco_total+'" id="body_id_preco_total'+n+'">R$ '+formatarValor(parseFloat(data.produtos[i].preco_total))+'</td>';
+    txt = txt + '<td style="text-align: right;"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+    txt = txt + '</tr>';
+    $("#compra_id_body_produtos").append(txt);
+    n++;
+    }
+    var total = data.total.replace(".","");
+    $('#compra_id_total').val(formatarValor(parseFloat(total)));    
   mostraFormularioSaida(0);
 }
 
 function clearFormProduto(){
-  $('#id_Cliente').val('0');
-  $('#cliente_id_CNPJ').val('');
-  $('#cliente_id_nome').val('');
-  $('#cliente_id_nome_fantasia').val('');
-  $('#cliente_id_inscestadual').val('');
-  $('#cliente_id_inscmunicipal').val('');
-  $('#cliente_data_fundacao').val('');
-  $('#cliente_id_crt').val('');
-  $("#cliente_id_CPF").val('');
-  $("#cliente_id_rg").val('');
-  $("#cliente_id_registro").val('');
-  $("#cliente_data_nascimento").val('');
-  $("#cliente_id_sexo").val('');
-  $("#cliente_id_estado_civil").val('');
-  $("#cliente_id_nome_pai").val('');
-  $("#cliente_id_nome_mae").val('');
-  $("#cliente_id_grau_instrucao").val('');
-  $("#cliente_id_compl_instrucao").val('');
-  $("#cliente_id_inst_ensino").val('');
-  $("#cliente_id_ra").val('');
-  $("#cliente_id_ano_letivo").val('');
-  $("#cliente_id_periodo").val('');
-  $("#cliente_id_status_credito").val('');
-  $("#cliente_id_limite_credito").val(''); 
-  $("#cliente_obs").val('');
-  $("#cliente_id_nomecontato").val('');
-  $("#cliente_id_emailcontato").val('');
-  $("#cliente_id_telefonecontato").val('');
-  $("#cliente_id_logradouro").val('');
-  $("#cliente_id_cidade").val('');
-  $("#cliente_id_numero").val('');
-  $("#cliente_id_estado").val('');
-  $("#cliente_id_CEP").val('');
-  $("#cliente_id_tipoLogradouro").val('');
-  $("#cliente_id_tipo_end").val('');
-  $("#cliente_id_bairro").val('');
-  $("#cliente_id_complemento").val('');
-  $("#cliente_id_referencia").val('');
+  $('#id_Compra').val(0);
+  $('#cliente_id_data_cadastro').val('')
+  $('#produto_fornecedor').val('').trigger('change');
+  $('#saida_cliente').val('').trigger('change');
+  $('#compra_id_preco').val('');
+  $('#compra_id_produto').val('');
+  $('#compra_id_unidade').val('');
+  $('#compra_id_quantidade').val('');
+  $('#compra_id_codigo').val('');
+  $('#compra_id_total').val('');
+  $('#compra_id_body_produtos').html('');
+    $("#compra_id_produto").attr("disabled", true);
+  $("#compra_id_quantidade").attr("disabled", true);
+  $("#compra_id_preco").attr("disabled", true);
 }
 
 function mostraGradeSaida(){
+  clearFormProduto();  
+  $('#gradeCliente').show();
+  $('#btnFormulaProduto').show();
+
+  $('#btnGradeCliente').hide();
+  $('#formularioProduto').hide();
+  $('#cliente_contatos_enderecos').hide();
+  $('#cliente_contatos').hide();
+  $('#cliente_enderecos').hide();
+  $('#cliente_contatos').html('');
+  $('#cliente_enderecos').html('');
+}
+
+function mostraFormularioSaida(edit){   
+  if (edit==1){
+    $('#id_Compra').val('0');
     clearFormProduto();
-    //mostrarGradeEndereco('cliente_id_editEndereco','cliente_gradeEndereco','cliente_btnFormularioEndereco','cliente_btnGradeEndereco','cliente_formularioEndereco');
-    //mostrarGradeContatoCliente();
-    
-    $('#gradeCliente').show();
-    $('#btnFormulaProduto').show();
-
-    $('#btnGradeCliente').hide();
-    $('#saida_id_formulario').hide();
-    $('#cliente_contatos_enderecos').hide();
-    $('#cliente_contatos').hide();
-    $('#cliente_enderecos').hide();
-    $('#cliente_contatos').html('');
-    $('#cliente_enderecos').html('');
   }
+  $('#gradeCliente').hide();
+  $('#btnFormulaProduto').hide();      
 
-  function mostraTipoCliente(tipo){
-    if(tipo == "PJ"){
-      $('#cliente_juridica').show();
-      $('#cliente_fisica').hide();
-    }else if(tipo == "PF"){
-      $('#cliente_fisica').show();
-      $('#cliente_juridica').hide();
-    }
-  }
-
-  function mostraFormularioSaida(edit){   
-    if (edit==1){
-      $('#id_Cliente').val('0');
-      clearFormProduto();
-    }
-    $('#gradeCliente').hide();
-    $('#btnFormulaProduto').hide();      
-
-    $('#btnGradeCliente').show();
-    $('#saida_id_formulario').show();
-    $('#cliente_contatos_enderecos').show();
-    $('#cliente_contatos').show();
-    $('#cliente_enderecos').show();
-  }   
-  
-function mostrarGradeContatoCliente(){
-  $("#idContato_cliente").val('0');
-  $('#gradeContato_clientes').show();
-  $('#btnFormularioContatoClientes').show();
-
-  $('#btnGradeContatoClientes').hide();
-  $('#formularioContatoCliente').hide();
+  $('#btnGradeCliente').show();
+  $('#formularioProduto').show();
+  $('#cliente_contatos_enderecos').show();
+  $('#cliente_contatos').show();
+  $('#cliente_enderecos').show();
 }
 
-function mostrarFormularioContatoCliente(limpar = true){
-  if (limpar == true){
-    $("#cliente_id_nomecontato").val('');
-    $("#cliente_id_emailcontato").val('');
-    $("#cliente_id_telefonecontato").val('');
-  }
-  $('#gradeContato_clientes').hide();
-  $('#btnFormularioContatoClientes').hide();      
-
-  $('#btnGradeContatoClientes').show();
-  $('#formularioContatoCliente').show(); 
+function carregarProduto(id){
+  $.ajax({
+    data: {
+        id : id,
+      },
+    type: 'GET',
+    url:'/buscar/produto_fornecedor'
+  }).success(function(data){
+    $("#compra_id_produto").html("<option value=''>--</option>");
+    var txt = '';
+    txt = txt+ '<optgroup label="Compra">'   
+    for (i in data){        
+      txt = txt + "<option value='"+JSON.stringify(data[i])+"'>"+data[i].nome+"  - "+data[i].marca+"</option>";
+    }         
+    txt = txt+ '</optgroup>'
+    $("#compra_id_produto").append(txt);
+    $("#compra_id_unidade").val(data[i].nome).change();
+  }).fail(function(data){
+  });
 }
 
-function editarContatoCliente(id, nome, email, telefone){
-  $('#idContato_cliente').val(id);
-  $("#cliente_id_nomecontato").val(nome);
-  $("#cliente_id_emailcontato").val(email);
-  $("#cliente_id_telefonecontato").val(telefone);
-  mostrarFormularioContatoCliente(false);
-} 
+function liberarProduto(){
+  $("#compra_id_produto").prop("disabled", false);
+  $("#compra_id_quantidade").prop("disabled", false);
+  $("#compra_id_preco").prop("disabled", false);
+}
+//Inserir Produto no extrato
+function inserirProduto(){
+  var n              = parseInt($("#compra_id_body_produtos tr").length)+1; 
+  var produto        = $("#compra_id_produto option:selected").text();
+  var quantidade     = parseFloat($("#compra_id_quantidade").val());
+  var unidade        = $("#compra_id_unidade").val();
+  var preco_unitario = parseFloat($("#compra_id_preco").val());
+  var fornecedor     = $("#produto_fornecedor option:selected").text();
+  var preco_total    = quantidade * preco_unitario;
+  var total_geral    = 0;
+  $('.preco-total').each(function () {
+    total_geral = total_geral + parseFloat($(this).attr("valor"));
+  });
+  total_geral = total_geral + preco_total;
+  var txt = '';
+  txt = '<tr>';
+  txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+  txt = txt + '<td id="body_id_fornecedor_'+n+'" valor="'+fornecedor+'">'+ fornecedor +'</td>';
+  txt = txt + '<td id="body_id_produto_'+n+'" valor="'+produto+'">'+ produto +'</td>';
+  txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+quantidade+'">'+quantidade+'</td>';
+  txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+unidade+'">'+unidade+'</td>';
+  txt = txt + '<td style="text-align: right;" valor="'+preco_unitario+'" id="body_id_preco_unitario'+n+'">R$ '+formatarValor(preco_unitario)+'</td>';
+  txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+preco_total+'" id="body_id_preco_total'+n+'">R$ '+formatarValor(preco_total)+'</td>';
+  txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+  txt = txt + '</tr>';
+  $("#compra_id_body_produtos").append(txt);
+  $("#compra_id_total").val(formatarValor(total_geral));
+}
 
-//Funções do endereço
-
-function excluirEnderecoCliente(id, idcliente){
+function excluirProduto(id){
   confirmar('Atenção',
-            'Deseja excluir este endereço?',
+            'Deseja excluir este produto?',
             'red',
             'fa fa-warning',
             function(){
-              var self = this;
-              self.close();
-             return $.ajax({
-                            data: {
-                              csrfmiddlewaretoken: '{{token}}',
-                              deletar : {
-                                idDel : id
-                              },
-                              cliente : idcliente
-                            },
-                            type: 'POST',
-                            url:'/cadastros/clientes/endereco/excluir/'
-                          }).success(function(data){
-                            if(data.result == 1){
-                              atualizarEndereco(idcliente,'clientes', 'cliente_enderecos', 'Cliente', 'cliente_id_editEndereco','cliente_gradeEndereco','cliente_btnFormularioEndereco','cliente_btnGradeEndereco','cliente_formularioEndereco');
-                            }
-                          }).fail(function(data){
-                              alertar('Atenção','Endereço não excluído </br> Tente novamente mais tarde','red','fa fa-warning');          
-                          })
+              var txt = '';
+              i = 1;
+              n = 1;
+              produtos_selecionados = $('#compra_id_body_produtos >tr');
+              console.log(produtos_selecionados);
+              produtos_selecionados.each(function(){
+                var $this = $(this);
+                if(id != i){
+                  txt = txt + '<tr>';
+                  txt = txt + '<td scope="row" id="row_'+n+'">'+n+'</td>';
+                  txt = txt + '<td id="body_id_produto_'+n+'" valor="'+ $("#body_id_produto_"+i).attr("valor") +'">'+ $("#body_id_produto_"+i).text() +'</td>';
+                  txt = txt + '<td id="body_id_quantidade_'+n+'" valor="'+$("#body_id_quantidade_"+i).attr("valor")+'">'+$("#body_id_quantidade_"+i).text()+'</td>';
+                  txt = txt + '<td id="body_id_unidade_'+n+'" valor="'+$("#body_id_unidade_"+i).attr("valor")+'">'+$("#body_id_unidade_"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" valor="'+$("#body_id_preco_unitario"+i).attr("valor")+'" id="body_id_preco_unitario'+n+'">'+ $("#body_id_preco_unitario"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" class="preco-total" valor="'+$("#body_id_preco_total"+i).attr("valor")+'" id="body_id_preco_total'+n+'">'+$("#body_id_preco_total"+i).text()+'</td>';
+                  txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
+                  txt = txt + '</tr>';
+                  i++;
+                  n++;
+                }else{
+                  i++
+                }
+              });
+              $('#compra_id_body_produtos').html('');
+              $('#compra_id_body_produtos').html(txt);
+              var total_geral = 0;
+              $('.preco-total').each(function () {
+                total_geral = total_geral + parseFloat($(this).attr("valor"));
+              });
+              $("#compra_id_total").val(formatarValor(parseFloat(total_geral)));
             }
           )
-}
-
-function mostrarFormularioEnderecoCliente(limpar = true){
-  if (limpar == true){
-    $("#cliente_id_logradouro").val('');
-    $("#cliente_id_cidade").val('');
-    $("#cliente_id_numero").val('');
-    $("#cliente_id_estado").val('');
-    $("#cliente_id_CEP").val('');
-    $("#cliente_id_tipoLogradouro").val('');
-    $("#cliente_id_tipo_end").val('');
-    $("#cliente_id_bairro").val('');
-    $("#cliente_id_complemento").val('');
-    $("#cliente_id_referencia").val('');
-  }
-  $('#cliente_gradeEndereco').hide();
-  $('#cliente_btnFormularioEndereco').hide();      
-
-  $('#cliente_btnGradeEndereco').show();
-  $('#cliente_formularioEndereco').show();
-  $('.selectpicker').selectpicker("refresh"); 
-}
- 
-function editarEnderecoCliente(id, data){
-  $('#cliente_id_editEndereco').val(id);
-  $('#cliente_id_tipo_end').val(data.tipo);
-  $('#cliente_id_CEP').val(data.CEP);
-  $('#cliente_id_tipoLogradouro').val(data.tipo_logradouro);
-  $('#cliente_id_logradouro').val(data.logradouro);
-  $('#cliente_id_numero').val(data.numero);
-  $('#cliente_id_complemento').val(data.complemento);
-  $('#cliente_id_bairro').val(data.bairro);
-  $('#cliente_id_referencia').val(data.referencia);
-  $('#cliente_id_cidade').val(data.cidade);
-  $('#cliente_id_estado').val(data.estado);
-  mostrarFormularioEnderecoCliente(false);
-  $('.selectpicker').selectpicker("refresh");
-}
-
-function gravarCliente(){
-  if ( $("#cliente_id_nomecontato").val() != '' || $("#cliente_id_emailcontato").val() != '' || $("#cliente_id_telefonecontato").val() != '' ){
-    adicionarContato('/cadastros/clientes/','#idContato_cliente','#cliente_id_nomecontato','#cliente_id_emailcontato','#cliente_id_telefonecontato','#id_Cliente','clientes','cliente_contatos', 'idContato_cliente', 'gradeContato_clientes', 'btnFormularioContatoClientes', 'btnGradeContatoClientes', 'formularioContatoCliente', 'addCliente(1)', 'Cliente');
-  }else if( $("#cliente_id_logradouro").val() != '' || $("#cliente_id_cidade").val() != '' || $("#cliente_id_CEP").val() != '' || $("#cliente_id_bairro").val() != ''){
-    adicionarEndereco('Cliente','cliente');    
-  }else{
-    addCliente(0);
-  }
-}
+};
 
 //Data
 $(function () {
-    $('#cliente_data_nascimento').datetimepicker({           
-        format: 'DD/MM/YYYY',
-        daysOfWeekDisabled: [0, 6],
-        locale: 'pt-br'
-    });
-    $('#cliente_data_fundacao').datetimepicker({           
-        format: 'DD/MM/YYYY',
-        daysOfWeekDisabled: [0, 6],
-        locale: 'pt-br'
-    });        
+    $( "#compra_id_produto").change(function () {
+      val = jQuery.parseJSON($("#compra_id_produto option:selected").attr("value"));
+      $("#compra_id_codigo").val(val.codigo);
+      $("#compra_id_unidade").val(val.unidade).change();
+      $("#compra_id_preco").val(val.preco);
+      });
+    
+    $("#produto_fornecedor").change(function(){
+      liberarProduto();
+      val = $("#produto_fornecedor option:selected").attr("value");
+      carregarProduto(val);
+    }); 
 
 });
-$('#id_get_entidade_cliente').on('keypress', function (e) {
+$('#id_get_compra').on('keypress', function (e) {
          if(e.which === 13){
-          carregarGradeSaida()
+          carregarGradeCompra()
          }
    });
 </script>
@@ -449,14 +308,14 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
   <div class="container body">
     <div class="page-title">
       <div class="title_left">                          
-        <h1>Saída</h1>
+        <h1>Saídas</h1>
       </div>    
       <div class="title_right">
         <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
           <div class="input-group">
-            <input type="text" id="id_get_entidade_cliente" class="form-control" placeholder="Pesquisar...">
+            <input type="text" id="id_get_compra" class="form-control" placeholder="Pesquisar...">
             <span class="input-group-btn">
-              <button id="cliente_btn_ok" class="btn btn-default" type="button" onclick="carregarGradeProduto()">Ok!</button>
+              <button id="cliente_btn_ok" class="btn btn-default" type="button" onclick="buscarSaida()">Ok!</button>
             </span>
           </div> 
         </div>
@@ -467,7 +326,7 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
     <div class="col-md-12 col-sm-12 col-xs-12">
       <div class="x_panel">
         <div class="x_title">
-          <h2>Formulário de cadastro de saída de produto</h2>
+          <h2>Formulário de cadastro de saídas</h2>
           <ul class="nav navbar-right panel_toolbox">
 
             <li id ="btnGradeCliente" style="display:none">
@@ -479,11 +338,11 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
           </ul>
           <div class="clearfix"></div>
         </div>
-        <div class="x_content" id="saida_id_formulario" style="display:none">
-          <input type="hidden" id="id_Cliente" name="id" value="0">                  
+        <div class="x_content" id="formularioProduto" style="display:none">
+          <input type="hidden" id="id_Compra" name="id" value="0">                  
           <form id="demo-form" data-parsley-validate>
             <div class="row">
-              <div class="col-md-3 col-sm-3 col-cx-6">
+              <div class="col-md-2 col-sm-2 col-cx-6">
                 <label class="control-label">Data de cadastro</label></br>
                 <div class='input-group date' id='cadastro'>
                   <input type='text' class="form-control" name="cadastro" id="cliente_id_data_cadastro" readonly/>
@@ -492,22 +351,24 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   </span>
                 </div>
               </div>
-              <div class="col-md-4 col-sm-4 col-xs-12">
-                <label for="fornecedorProduto"></span>Marceneiro</label>
-                <div class="input-group">                
+              <div class="col-md-5 col-sm-5 col-xs-12">
+                <label ></span>Cliente</label>
+                <div class="input-group row-fluid">              
                   <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-user"></span>
+                      <i class="fa fa-truck"></i>
                   </span>
-                  <input type="text" name="fornecedorProduto" onkeypress="clearClassBad('produto_id_fornecedor')" maxlength="200" title="" id="produto_id_fornecedor" class="form-control" />
+                  <select class="selectpicker form-control" data-live-search="true" id="saida_cliente" style="width: 100%;">
+                    </select>  
                 </div>
               </div>
               <div class="col-md-5 col-sm-5 col-xs-12">
-                <label for="fornecedorProduto"></span>Cliente</label>
-                <div class="input-group">                
+                <label for="fornecedorProduto"></span>Fornecedor</label>
+                <div class="input-group row-fluid">              
                   <span class="input-group-addon">
-                      <span class="glyphicon glyphicon-user"></span>
+                      <i class="fa fa-truck"></i>
                   </span>
-                  <input type="text" name="fornecedorProduto" onkeypress="clearClassBad('produto_id_fornecedor')" maxlength="200" title="" id="produto_id_fornecedor" class="form-control" />
+                  <select class="selectpicker form-control" data-live-search="true" id="produto_fornecedor" style="width: 100%;">
+                    </select>  
                 </div>
               </div>          
             </div>
@@ -518,13 +379,24 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
               <div class="clearfix"></div>
             </div>
             <div class="row">
+              <div class="col-md-4 col-sm-4 col-xs-12">
+                <label for="descricaoCompra"></span>Produto</label>
+                <div class="input-group">              
+                  <span class="input-group-addon">
+                      <span class="fa fa-pencil"></span>
+                  </span>
+                  <select disabled="disabled" class="selectpicker form-control" data-live-search="true" id="compra_id_produto" style="width: 100%;">
+                    <option value='0'>-</option>
+                  </select>  
+                </div>
+              </div> 
               <div class="col-md-2 col-sm-2 col-xs-6">
                 <label for="codigoProduto"></span>Código</label>
                 <div class="input-group">                
                   <span class="input-group-addon">
-                      <span class="fa fa-code"></span>
+                      <i class="fa fa-code"></i>
                   </span>
-                  <input type="number" name="codigoProduto" onkeypress="clearClassBad('produto_id_codigo')" maxlength="200" title="" id="produto_id_codigo" class="form-control" />
+                  <input disabled="disabled" type="number" name="codigoProduto" onkeypress="clearClassBad('compra_id_codigo')" maxlength="200" title="" id="compra_id_codigo" class="form-control" />
                 </div>
               </div>
               <div class="col-md-2 col-sm-2 col-xs-12">
@@ -533,7 +405,7 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   <span class="input-group-addon">
                     <span class="fa fa-cubes"></span>
                   </span>
-                  <input type="number" maxlength="18" title="" id="compra_id_quantidade" class="form-control" />
+                  <input disabled="disabled" type="number" maxlength="18" title="" id="compra_id_quantidade" class="form-control" />
                 </div>
               </div>
               <div class="col-md-2 col-sm-2 col-xs-12">
@@ -542,7 +414,7 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   <span class="input-group-addon">
                     <span class="fa fa-thumb-tack"></span>
                   </span>          
-                  <select class="selectpicker form-control" data-live-search="true"  name="" id ="produto_id_unidade" >
+                  <select disabled="disabled" class="selectpicker form-control" data-live-search="true"  name="" id ="compra_id_unidade" >
                     <option value= "">...</option>
                     <option>Cartela com 50</option>
                     <option>Kilo</option>
@@ -557,27 +429,18 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   </select>
                 </div>
               </div>    
-              <div class="col-md-4 col-sm-4 col-xs-12">
-                <label for="descricaoCompra"></span>Descrição do Produto</label>
-                <div class="input-group">              
-                  <span class="input-group-addon">
-                      <span class="fa fa-pencil"></span>
-                  </span>
-                  <input type="text" name="descricaoCompra" onkeypress="clearClassBad('compra_id_descricao')" maxlength="200" title="" id="compra_id_descricao" class="form-control" />
-                </div>
-              </div> 
+              
               <div class="col-md-2 col-sm-2 col-xs-12">
-                <label class="control-label">Valor em R$</label>
+                <label class="control-label">Preço em R$</label>
                 <div class="input-group">
                   <span class="input-group-addon">
                     <span class="fa fa-dollar"></span>
                   </span>
-                  <input type="number" maxlength="18" title="" id="produto_id_estoque_inicial" class="form-control" />
+                  <input disabled="disabled" maxlength="18" title="" id="compra_id_preco" class="form-control" />
                 </div>
               </div>
               <div class="x-content pull-right">     
-                <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeFuncionario()">Cancelar</button> 
-                <button type="button" class="btn btn-round btn-success" onclick="gravarFuncionario()">Inserir</button>
+                <button type="button" class="btn btn-round btn-default" onclick="inserirProduto()">Inserir</button>
               </div> 
             </div>
             <div class="row">
@@ -586,12 +449,16 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   <thead>
                     <tr>
                       <th style="width: 2%">#</th>
+                      <th style="width: 10%">Fornecedor</th>
+                      <th style="width: 25%">Produto</th>
                       <th style="width: 5%">Qtd</th>
-                      <th style="width: 58%">Produto</th>
-                      <th style="width: 35%">Preço</th>
+                      <th style="width: 8%">Unidade</th>
+                      <th style="width: 21%; text-align: right;">Preço Unitário</th>
+                      <th style="width: 21%; text-align: right;">Preço Total</th>
+                      <th style="width: 8%; text-align: right;">Excluir</th>
                     </tr>
                   </thead>
-                  <tbody id="fornecedores_contatos">
+                  <tbody id="compra_id_body_produtos">
 
                   </tbody> 
                 </table>
@@ -602,17 +469,16 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
                   <span class="input-group-addon">
                     <span class="fa fa-dollar"></span>
                   </span>
-                  <input type="number" maxlength="18" title="" id="compra_id_total" class="form-control" readonly/>
+                  <input style="text-align: right;" maxlength="18" title="" id="compra_id_total" class="form-control" readonly/>
                 </div>
               </div>
             </div>
             </br>
             <div class="x-content pull-right">     
               <button type="button" class="btn btn-round btn-danger" onclick="mostraGradeSaida()">Cancelar</button> 
-              <button type="button" class="btn btn-round btn-success" onclick="gravarCliente()">Salvar</button>
+              <button type="button" class="btn btn-round btn-success" onclick="adicionarSaida()">Salvar</button>
             </div>           
           </form>
-
         </div>
         <div class="table-responsive"  id="gradeCliente">
           <table class="table table-hover"  >
@@ -620,12 +486,12 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
               <tr name="parse_table">
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Data</th>
-                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 70%;" aria-sort="ascending">Fornecedor</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 70%;" aria-sort="ascending">Cliente</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 18%;" aria-sort="ascending">Preço Total</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;">Ações</th>
               </tr>
             </thead>      
-            <tbody id="id_itens_clientes">
+            <tbody id="id_itens_compras">
             </tbody>
           </table>
         </div>
@@ -634,18 +500,16 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
     </div>
   </div>
 </div>
-<script type="text/javascript">
-  $(document).ready(function() { 
-  $('.selectpicker').selectpicker("refresh");
-  $('.tel').mask('(00) 00000-0009');
-  $('.cnpj').mask('00.000.000/0000-00', {reverse: true});
-  $('.cpf').mask('000.000.000-00', {reverse: true});
-  $('.cep').mask('00000-000');
-  checkboxTrueFalse() 
-});
-</script>
 {% endblock content %}
 
 {% block javascripts %}
   {{ block.super }}
+  
+<script type="text/javascript">
+  $(document).ready(function() {
+    carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
+    carregarEntidade(['saida_cliente'],'cliente','Cliente',true);
+    buscarSaida();
+  });
+</script>
 {% endblock javascripts %}

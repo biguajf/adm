@@ -1,6 +1,6 @@
 <div class="left_col scroll-view">
   <div class="navbar nav_title" style="border: 0;">
-    <a href="index.html" class="site_title">
+    <a href="/" class="site_title">
       <div class="profile_pic" style="border: 0; width: 30%">
       <img src="/static/images/logo_Lumax.svg" alt="" class="img-circle profile_img" style="border: 0; margin: 0">
       </div>
@@ -36,26 +36,41 @@
       <ul class="nav side-menu">
         <li><a><i class="fa fa-home"></i> Home <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
-            <li><a href="index.html">Indicadores</a></li>
+            <li><a href="/">Indicadores</a></li>
           <!--
             <li><a href="index2.html">Dashboard2</a></li>
             <li><a href="index3.html">Dashboard3</a></li>
           -->
           </ul>
         </li>
-        <li><a><i class="fa fa-pencil"></i> Cadastros <span class="fa fa-chevron-down"></span></a>
+        <li><a><i class="fa fa-pencil"></i> Cadastros <span class="fa fa-chevron-down"></span></a>        
           <ul class="nav child_menu">
+            {% if usuario < 3 %}
             <li><a href="/usuario/">Usuarios</a></li>
+            {% endif %}
+            {% if cliente < 3 %}
             <li><a href="/cliente/">Clientes</a></li>
+            {% endif %}
+            {% if compra < 3 %}
             <li><a href="/compra/">Compras</a></li>
+            {% endif %}
+            {% if fornecedor < 3 %}
             <li><a href="/fornecedor/">Fornecedores</a></li>
-            <li><a href="funcionarios.html">Funcionarios</a></li>
+            {% endif %}
+            {% if funciionario < 3 %}
+            <li><a href="/funcionario/">Funcionarios</a></li>
+            {% endif %}
+            {% if produto < 3 %}
             <li><a href="/produto/">Produtos</a></li>
-            <li><a href="saidas.html">Saídas</a></li>
+            {% endif %}
+            {% if saida < 3 %}
+            <li><a href="/saida/">Saídas</a></li>
+            {% endif %}
           <!--
             <li><a href="index2.html">Dashboard2</a></li>
             <li><a href="index3.html">Dashboard3</a></li>
           -->
+          
           </ul>
         </li>
         <!--
@@ -84,17 +99,17 @@
             <li><a href="calendar.html">Calendar</a></li>
           </ul>
         </li>
-      -->
+      
         <li><a><i class="fa fa-table"></i> Calendário <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             <li><a href="calendar.html">Calendário</a></li>
-            <!--
+            
             <li><a href="tables.html">Tables</a></li>
             <li><a href="tables_dynamic.html">Table Dynamic</a></li>
-          -->
+         
           </ul>
         </li>
-        <!--
+       
         <li><a><i class="fa fa-bar-chart-o"></i> Data Presentation <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             <li><a href="chartjs.html">Chart JS</a></li>
@@ -110,14 +125,14 @@
             <li><a href="fixed_footer.html">Fixed Footer</a></li>
           </ul>
         </li>
-      -->
+    
       <li><a><i class="fa fa-sitemap"></i>Projetos <span class="fa fa-chevron-down"></span></a>
           <ul class="nav child_menu">
             <li><a href="projects.html">Projetos</a></li>
-            <!--<li><a href="project_detail.html">Detalhes do Projeto</a></li> -->
+            <li><a href="project_detail.html">Detalhes do Projeto</a></li> 
           </ul>
         </li>
-      </ul>
+      </ul>-->
     </div>
     <!--
     <div class="menu_section">

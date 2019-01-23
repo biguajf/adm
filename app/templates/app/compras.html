@@ -47,7 +47,7 @@ function adicionarCompra(){
   if ($("#compra_id_total").val() == ''){
     alertar('ATENÇÂO','Insira os produtos comprados','red', 'glyphicon glyphicon-alert');
   }else{
-    i = 0;
+    i = 1;
     produto_array = '['
     produtos_selecionados = $('#compra_id_body_produtos >tr');
     produtos_selecionados.each(function(){
@@ -58,7 +58,7 @@ function adicionarCompra(){
       produto_array = produto_array + '"preco_unitario":"'+$('#body_id_preco_unitario'+i).attr("valor")+'",';
       produto_array = produto_array + '"preco_total":"'+$('#body_id_preco_total'+i).attr("valor")+'"';
       produto_array = produto_array + '}';
-      if(i < $('#compra_id_body_produtos >tr').length-1){
+      if(i < $('#compra_id_body_produtos >tr').length){
         produto_array = produto_array + ','
       }
       i++

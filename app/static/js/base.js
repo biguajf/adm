@@ -588,6 +588,10 @@ function excluirEntidade(id, tipo_entidade, entidade){
                 type: 'POST',
                 url:'/excluir/entidade'               
               }).success(function(data){
+                $('#spinner_modal').modal('hide');
+                if(data.result == 0){
+                  alertar('Atenção','Não foi possível excluir este registro </br> Tente novamente mais tarde','red','fa fa-warning');
+                }
                 $("#"+entidade+"_btn_ok").click();
               }).fail(function(data){
                 alertar('Atenção','Não foi possível excluir este registro </br> Tente novamente mais tarde','red','fa fa-warning');
