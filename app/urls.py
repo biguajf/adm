@@ -10,7 +10,6 @@ urlpatterns = [
     # The home page
     url(r'^$', views.index, name='index'),
     url(r'^auth/$',views.viewAuth),
-    url(r'^caneca/$',views.caneca),
     url(r'^login/$',views.viewLogin),
     url(r'^logoff/$',views.viewLogoff),
     url(r'^excluir/endereco/?$',views.excluirEndereco),
