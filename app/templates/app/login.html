@@ -4,7 +4,7 @@
     {% block head %}
       {% block meta %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="sortcut icon" href="/static/images/csv_export_ico.ico" type="image/x-icon" />;
+        <link rel="sortcut icon" href="/static/images/logo_lumax.svg" type="image/x-icon" />;
         <!-- Meta, title, CSS, favicons, etc. -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -143,7 +143,7 @@
         <div class="animate form login_form" id="form_login">
           <section class="login_content">
             <form method="post" action="/auth/">{% csrf_token %}
-              <img src=''></br></br></br>
+              <img style="display: block; margin-left: auto; margin-right: auto; width: 90%;" src='/static/images/Lumax Movelaria IDENTIDADE VISUAL3.png'></br></br>
               <div>
                 <input type="text" class="form-control" id="id_login" name ="username" placeholder="usuário" required />
               </div>
@@ -154,7 +154,6 @@
                  </br><button type="submit" class="btn btn-round btn-success">entrar</button></br></br></br>
               </div>
               <div class="separator">
-              <div class="change_link navbar-right">Não possue uma conta? <a onclick="formCadastroEmpresa()"><small>Cadastre sua empresa</small></a></div>
               </br>
                </br></br> <p class="change_link">SUPORTE</p>
 
@@ -167,8 +166,13 @@
               </div>
 
             </form>
+            <div class="clearfix"></div>
+            <div>
+              <p>2019 All Rights Reserved. LUMAX MOVELARIA</p>
+            </div>
           </section>
         </div>
+<<<<<<< HEAD
 
         <div id="register" class="animate form login_form" style="display: none;">
           <section class="login_content">
@@ -373,6 +377,8 @@
           </section>
         </div>
       </div>
+=======
+>>>>>>> 8840bf8ff20a0027a947542d7e0ccada322de3ea
     </div>
  {% block javascripts %}
         <!-- jQuery -->
