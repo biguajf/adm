@@ -2,12 +2,15 @@ certifi==2018.11.29
 dj-static==0.0.6
 Django==2.1.2
 django-filter==2.0.0
-git+https://github.com/MongoEngine/django-mongoengine.git
+django-mongoengine==0.3
 djangorestframework==3.9.0
 gunicorn==19.9.0
 Markdown==3.0.1
 mongoengine==0.15.3
+pipenv==2018.11.26
 pymongo==3.7.1
 pytz==2018.5
 six==1.11.0
 static3==0.7.0
+virtualenv==16.1.0
+virtualenv-clone==0.4.0

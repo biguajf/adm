@@ -98,7 +98,7 @@ MONGODB_DATABASES = {
         #"host":"ds115283.mlab.com:15283",
         #"username": 'lumax',
         #"password": '_#l1m2x#_',
-
+        #"host":"mongodb://cloud:ds033103.mlab.com:33103,ds033103.mlab.com:33103,ds033103.mlab.com:33103",
         "name": 'lumaxdata',
         "host":"ds033103.mlab.com:33103",
         "username": 'lumaxdata',
