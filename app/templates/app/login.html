@@ -4,7 +4,7 @@
     {% block head %}
       {% block meta %}
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="sortcut icon" href="/static/images/csv_export_ico.ico" type="image/x-icon" />;
+        <link rel="sortcut icon" href="/static/images/logo_lumax.svg" type="image/x-icon" />;
         <!-- Meta, title, CSS, favicons, etc. -->
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -143,7 +143,7 @@
         <div class="animate form login_form" id="form_login">
           <section class="login_content">
             <form method="post" action="/auth/">{% csrf_token %}
-              <img src=''></br></br></br>
+              <img style="display: block; margin-left: auto; margin-right: auto; width: 90%;" src='/static/images/Lumax Movelaria IDENTIDADE VISUAL3.png'></br></br>
               <div>
                 <input type="text" class="form-control" id="id_login" name ="username" placeholder="usuário" required />
               </div>
@@ -154,7 +154,6 @@
                  </br><button type="submit" class="btn btn-round btn-success">entrar</button></br></br></br>
               </div>
               <div class="separator">
-              <div class="change_link navbar-right">Não possue uma conta? <a onclick="formCadastroEmpresa()"><small>Cadastre sua empresa</small></a></div>
               </br>
                </br></br> <p class="change_link">SUPORTE</p>
 
@@ -167,212 +166,12 @@
               </div>
 
             </form>
+            <div class="clearfix"></div>
+            <div>
+              <p>2019 All Rights Reserved. LUMAX MOVELARIA</p>
+            </div>
           </section>
         </div>
-
-        <div id="register" class="animate form login_form" style="display: none;">
-          <section class="login_content">
-            <img src=''></br></br>
-            <form novalidate id="form_criar_conta">
-              <h1>Criar Conta</h1>
-              <div class="clearfix"></div>
-              <div class="separator">Usuario</div></br>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group" >
-                <input type="text" class="form-control" placeholder="Username" id="id_username" required="required" onchange="buscarUsername('#id_username','username')" />
-              </div>
-              
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Nome" id="id_user_nome" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control cpf" placeholder="CPF" id="id_CPF" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Email" id="id_user_email" required="required" onchange="buscarUsername('#id_user_email', 'email')" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control tel" placeholder="Telefone" id="id_user_telefone" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="password" class="form-control" placeholder="Senha" id="id_senha" name="id_senha" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="password" class="form-control" data-validate-linked="id_senha" placeholder="Confirmar senha" id="id_confirm_senha" required="required" />
-              </div>
-
-               <div class="clearfix"></div>
-              <div class="separator">Dados da Empresa</div></br>
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control cnpj" placeholder="CNPJ" id="id_CNPJ" required="required" onchange="buscarCNPJ('#id_CNPJ')"/>
-              </div>
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Razão social" id="id_nome" required="required" />
-              </div>
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Nome fantasia" id="id_nome_fantasia" required="required" />
-              </div>
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <select title="Plano" class="selectpicker form-control" data-live-search="true" style="width: 100%"  id ="id_mensalidade" required="required">
-                  <option value="" disabled selected hidden>Plano</option>
-                  <option value= "50">Beta</option>
-                  <option value= "100">Alfa</option>
-                </select>
-              </div>
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <select id="id_vencimento" title="Dia Vencimento" class="selectpicker form-control" data-live-search="true"  style="width: 100%" required="required">
-                  <option value="" disabled selected >Vencimento</option>
-                  <option value="1">01</option>
-                  <option value="2">02</option>
-                  <option value="3">03</option>
-                  <option value="4">04</option>
-                  <option value="5">05</option>
-                  <option value="6">06</option>
-                  <option value="7">07</option>
-                  <option value="8">08</option>
-                  <option value="9">09</option>
-                  <option value="10">10</option>
-                  <option value="11">11</option>
-                  <option value="12">12</option>
-                  <option value="13">13</option>
-                  <option value="14">14</option>
-                  <option value="15">15</option>
-                  <option value="16">16</option>
-                  <option value="17">17</option>
-                  <option value="18">18</option>
-                  <option value="19">19</option>
-                  <option value="20">20</option>
-                  <option value="21">21</option>
-                  <option value="22">22</option>
-                  <option value="23">23</option>
-                  <option value="24">24</option>
-                  <option value="25">25</option>
-                  <option value="26">26</option>
-                  <option value="27">27</option>
-                  <option value="28">28</option>
-                  <option value="29">29</option>
-                  <option value="30">30</option>
-                  <option value="31">31</option>
-                </select>
-              </div>    
-
-              <div class="clearfix"></div>
-              <div class="separator">Endereço</div></br>
-
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <select select id="id_tipo_endereco" title="Tipo" class="selectpicker form-control" data-live-search="true" style="width: 100%" required="required">
-                  <option value="" disabled selected >Tipo</option>
-                  <option value="Sede">Sede</option>
-                  <option value="Entrega">Entrega</option>
-                  <option value="Cobrança">Cobrança</option>
-                </select>
-              </div>
-
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <input type="text" class="form-control cep" placeholder="CEP" id="id_CEP" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group" style="margin-bottom: 20px">
-                <select id="id_tipo_logradouro" title="tipo logradouro" class="selectpicker form-control" data-live-search="true" style="width: 100%" required="required">
-                  <option value="" disabled selected >Tipo Logradouro</option>
-                  <option value="Rua">Rua</option>
-                  <option value="Avenida">Avenida</option>
-                  <option value="Praça">Praça</option>
-                  <option value="Largo">Largo</option>
-                  <option value="Travessa">Travessa</option>
-                  <option value="Rodovia">Rodovia</option>
-                  <option value="Estrada">Estrada</option>
-                  <option value="Estrada">Via</option>
-                  <option value="Alameda">Alameda</option>
-                  <option value="Quadra">Quadra</option>
-                </select>
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Logradouro" id="id_logradouro" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group" style="margin-bottom: 20px">
-                <input type="number" class="form-control" placeholder="Numero" id="id_numero" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group" >
-                <input type="text" class="form-control" placeholder="Complemento" id="id_complemento" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Bairro" id="id_bairro" required="required" />
-              </div>
-
-              <div class="col-md-12 col-sm-12 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Referência" id="id_referencia" />
-              </div>
-
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <input type="text" class="form-control" placeholder="Cidade" id="id_cidade" required="required" />
-              </div>
-
-              <div class="col-md-6 col-sm-6 col-xs-12 item form-group">
-                <select id="id_estado" title="Estado" class="selectpicker form-control" data-live-search="true" style="width: 100%" required="required">
-                  <option value="" disabled selected >Estado</option>
-                  <option>AC</option>
-                  <option>AL</option>
-                  <option>AP</option>
-                  <option>AM</option>
-                  <option>BA</option>
-                  <option>CE</option>
-                  <option>DF</option>
-                  <option>ES</option>
-                  <option>GO</option>
-                  <option>MA</option>
-                  <option>MT</option>
-                  <option>MS</option>
-                  <option>MG</option>
-                  <option>PA</option>
-                  <option>PB</option>
-                  <option>PR</option>
-                  <option>PE</option>
-                  <option>PI</option>
-                  <option>RJ</option>
-                  <option>RN</option>
-                  <option>RS</option>
-                  <option>RO</option>
-                  <option>RR</option>
-                  <option>SC</option>
-                  <option value="SP" selected>SP</option>
-                  <option>SE</option>
-                  <option>TO</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <div class="col-md-8 col-md-offset-2">
-                  <button class="btn btn-primary" type="button" value="cancelar" onclick="formLogin()">Cancelar</button>
-                  <button id="send" type="submit" value="salvar" class="btn btn-success">Salvar</button>
-                </div>
-              </div>
-
-              <div class="clearfix"></div>
-
-              <div class="separator">
-                <p class="change_link">Já está cadastrado?
-                  <a class="to_register" onclick="formLogin()"> Log in </a>
-                </p>
-
-                <div class="clearfix"></div>
-                <div>
-
-                  <p>2017 All Rights Reserved. Clouds Sistemas LTDA ME</p>
-                </div>
-              </div>
-            </form>
-          </section>
-        </div>
-      </div>
     </div>
  {% block javascripts %}
         <!-- jQuery -->
