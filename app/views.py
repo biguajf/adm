@@ -16,15 +16,18 @@ from mongoengine.queryset.visitor import Q
 
 #Autentivcacao
 def viewLogin(request):
-  template ='app/login.html'
-  token = get_token(request)
-  params ={'token' : token}
-  return render(request,template,params)
+  if not request.user.is_authenticated:
+    template ='app/login.html'
+    token = get_token(request)
+    params ={'token' : token}
+    return render(request,template,params)
+  else:
+    return redirect('/')
 
 def viewAuth(request):
   username = request.POST['username'].upper()
   password = request.POST['password']
-  user = authenticate(request, username=username, password=password)
+  user = authenticate(request, username=username, password=password.encode('utf8'))
   if user and user.is_active:
     if user.check_password(password):
       login(request,user)
@@ -46,7 +49,9 @@ def viewLogoff(request):
 @login_required(login_url='/login/')
 def index(request):
     permissoes =  request.user.user_permissions[0].id
+    username = request.user.username
     context = literal_eval(permissoes)
+    context['username'] = username
     template = loader.get_template('app/index.html')
     return HttpResponse(template.render(context, request))
 
@@ -61,7 +66,7 @@ def usuario(request):
       except:
         idUsuario = '0'
         pass
-      #    
+      #   
       if idUsuario == '0':
         usuario = Usuario()
         usuario.nome             = request.POST['usuario[nome]']
@@ -72,32 +77,20 @@ def usuario(request):
         #
         usuario.save(commit = True)
         #
-        user_id          = str(usuario.id)
-        usuario_2        = Usuario.objects(id = user_id)[0]
-        usuario_2.user_permissions = request.POST['usuario[permissoes]']
-        usuario_2.save(commit = True)
-        #
         result={'result':1}
         return HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')
       else:      
         usuario = Usuario.objects(id = idUsuario)[0]
-        username = request.POST['usuario[usuario]'].upper()
-        password = request.POST['usuario[senha]']
-        user = authenticate(request, username=username, password=password)
-        if user and user.is_active:
-          if user.check_password(password):
-            usuario.nome            = request.POST['usuario[nome]']
-            usuario.usuario         = request.POST['usuario[usuario]']
-            usuario.senha           = request.POST['usuario[senha]']
-            usuario.email           = request.POST['usuario[email]']
-            usuario.user_permissions     = request.POST['usuario[permissoes]']   
-            #
-            usuario.save(commit = True)
-            result={'result':1}
-            return HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')
-          else:
-            result={'result':0}
-            return HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')
+        usuario.nome            = request.POST['usuario[nome]']
+        usuario.usuario         = request.POST['usuario[usuario]']
+        usuario.senha           = request.POST['usuario[senha]']
+        usuario.email           = request.POST['usuario[email]']
+        usuario.user_permissions = request.POST['usuario[permissoes]']   
+        #
+        usuario.save(commit = True)
+        result={'result':1}
+        return HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')
+
     else:
             result={'result':0}
             return HttpResponse(json.dumps(result, ensure_ascii=False), content_type='application/json')

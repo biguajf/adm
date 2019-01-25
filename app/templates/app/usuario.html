@@ -72,14 +72,13 @@
         $('#spinner_modal').modal('hide');        
       }).fail(function(data){
         $('#spinner_modal').modal('hide');
-        alertar('Atenção','Não foi possível salvar o usuario </br> Confirme a senha','red','fa fa-warning');
+        alertar('Atenção','Não foi possível salvar o usuario </br> Username já cadastrado, ou email incorreto.','red','fa fa-warning');
       });
     }
     return 1;
   }
 
 function editarUsuario(data){
-  console.log(data.user_permissions)
   $('#usuario_id').val(data._id['$oid']);
   $('#usuario_id_usuario').val(data.usuario);
   $('#usuario_id_nome').val(data.nome);

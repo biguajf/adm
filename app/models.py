@@ -185,6 +185,7 @@ class Usuario(EntidadeAbstract):
 			self.cadastro = datetime.datetime.now()
 			try:	
 				temp = User.create_user(self.usuario,self.senha,self.email)
+				temp.update(user_permissions = bson.dbref.DBRef('permissions', [self.user_permissions]))
 			except:
 				return
 			self.userid = str(temp.id)
