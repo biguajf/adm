@@ -28,7 +28,7 @@ function buscarCompra(){
           texto_html = texto_html + '<th scope="row">'+n+'</th>';
           texto_html = texto_html + '<td>'+ moment(data[i].data_cadastro['$date']).format('DD/MM/YYYY')+'</td>';
           texto_html = texto_html + '<td>'+ data[i].fornecedor +'</td>';
-          texto_html = texto_html + '<td>'+data[i].total+'</td>';
+          texto_html = texto_html + '<td>R$ '+formatarValor(data[i].total) +'</td>';
           texto_html = texto_html + '<td>';
           var parametro_edit = "'editarCompra("+ JSON.stringify(data[i])+")'";
             texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';

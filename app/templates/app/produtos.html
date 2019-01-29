@@ -59,13 +59,13 @@
             };
             preco = parseInt(soma_preco)/j;
             if (preco != 0){
-              texto_html = texto_html + '<td>'+ preco +'</td>';
+              texto_html = texto_html + '<td>R$ '+ formatarValor(preco) +'</td>';
             }
             else{
               texto_html = texto_html + '<td> - </td>'; 
             }
             if (preco!=0 && data[i].detalhes.estoque_atual){
-              texto_html = texto_html + '<td>'+ preco*data[i].detalhes.estoque_atual +'</td>';
+              texto_html = texto_html + '<td>R$ '+formatarValor( preco*data[i].detalhes.estoque_atual) +'</td>';
             }
             else{
               texto_html = texto_html + '<td> - </td>'; 
