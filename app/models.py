@@ -134,7 +134,7 @@ class Entidade(EntidadeAbstract):
 			marca = Marca.objects(nome=self.detalhes.marca)
 			if not marca:
 				marca = Marca()
-				marca.nome = self.detalhes.marca
+				marca.nome = self.detalhes.marca.upper()
 				marca.save()
 			historico               = HistoricoProduto()
 			historico.nome          = self.nome
