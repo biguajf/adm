@@ -54,10 +54,10 @@
             }
             for (k in data[i].detalhes.fornecedor){
               preco_k = data[i].detalhes.fornecedor[k].preco;
-              soma_preco = soma_preco + parseInt(preco_k);
+              soma_preco = soma_preco + parseFloat(preco_k);
               j++;
             };
-            preco = parseInt(soma_preco)/j;
+            preco = parseFloat(soma_preco)/j;
             if (preco != 0){
               texto_html = texto_html + '<td>R$ '+ formatarValor(preco) +'</td>';
             }
