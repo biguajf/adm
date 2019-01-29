@@ -14,6 +14,51 @@ from ast import literal_eval
 from app.models import *
 from mongoengine.queryset.visitor import Q
 
+#Funções
+def atualizarEstoque(tipo, produto, fornecedor):
+  if tipo == 'compra':
+    entidade = Entidade.objects(id=fornecedor)[0]
+    fornecedor_produto = json.loads(produto)
+    for i in fornecedor_produto:
+      n = 0
+      produto_split = i['produto']
+      a,b = produto_split.split('  - ')
+      for j in entidade.produtos:
+        if a == j['produto_nome'] and b == j['marca']:        
+          entidade.produtos[n]['preco'] = i['preco_unitario']
+          entidade.save() #salva no fornecedor
+          #salva no produto
+          produto_save = Entidade.objects(id=j['_id'])[0]
+          m=0
+          for k in produto_save.detalhes.fornecedor:
+            if k['_id'] == fornecedor:
+              detalhes = produto_save.detalhes
+              detalhes['fornecedor'][m]['preco'] = i['preco_unitario']
+              detalhes['estoque_atual'] = str(float(detalhes['estoque_atual']) + float(i['quantidade']))
+              produto_save.detalhes = detalhes
+              produto_save.update(detalhes = detalhes)
+              produto_save.save(commit = True)
+            m+=1
+        n+=1
+    return
+  elif tipo == 'saida':
+    fornecedor_produto = json.loads(produto)
+    for i in fornecedor_produto:
+      produto_split = i['produto']
+      a,b = produto_split.split('  - ')
+      produto_saida = Entidade.objects(Q(tipo = 'PRODUTO') & Q(nome=a) & Q(detalhes__marca=b))[0]
+      m=0
+      for k in produto_saida.detalhes.fornecedor:
+        if k['nome'] == i['fornecedor']:
+          detalhes = produto_saida.detalhes
+          detalhes['estoque_atual'] = str(float(detalhes['estoque_atual']) - float(i['quantidade']))
+          produto_saida.detalhes = detalhes
+          produto_saida.update(detalhes = detalhes)
+        m+=1
+    return
+  else:
+    return
+
 #Autentivcacao
 def viewLogin(request):
   if not request.user.is_authenticated:
@@ -116,7 +161,6 @@ def excluirUsuario(request):
 
 @login_required(login_url='/login/')
 def buscarUsuario(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     usuario = Usuario.objects(id=request.GET['id'])
   elif not 'filtro' in request.GET:
@@ -147,6 +191,8 @@ def gentella_html(request):
   load_template = request.path.split('/')[-1]
   template = loader.get_template('app/' + load_template)
   return HttpResponse(template.render(context, request))
+
+
 
 @login_required(login_url='/login/')
 def excluirEntidade(request):
@@ -379,7 +425,6 @@ def fornecedores(request):
 
 @login_required(login_url='/login/')
 def buscarFornecedores(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     fornecedores = Entidade.objects(id=request.GET['id'])
   elif not 'filtro' in request.GET:
@@ -501,7 +546,6 @@ def produto(request):
 
 @login_required(login_url='/login/')
 def buscarProduto(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     produto = Entidade.objects(id=request.GET['id'])
   elif not 'filtro' in request.GET:
@@ -518,7 +562,6 @@ def buscarProduto(request):
 
 @login_required(login_url='/login/')
 def buscarMarca(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     marca = Marca.objects(id=request.GET['id'])
   elif not 'filtro' in request.GET:
@@ -535,7 +578,6 @@ def buscarMarca(request):
 
 @login_required(login_url='/login/')
 def buscarFornecedorProduto(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     fornecedor = Entidade.objects(id=request.GET['id'])[0]
     produtos_id = []
@@ -811,11 +853,10 @@ def clientes(request):
 
 @login_required(login_url='/login/')
 def buscarHistoricoProduto(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if request.method == 'GET':
     nome  = request.GET['nome']
     marca = request.GET['marca']
-    historico = HistoricoProduto.objects(Q(nome = nome) & Q(marca=marca))
+    historico = HistoricoProduto.objects(Q(nome = nome) & Q(marca=marca)).order_by('-_id')[:5]
 
     data = []
     for row in historico:
@@ -844,6 +885,7 @@ def compras(request):
       compra.save(commit = True)
       id_gerado = str(compra.id)
       result = {'result': id_gerado}
+      atualizarEstoque('compra', request.POST['produtos'], request.POST['fornecedor'])
       return HttpResponse(json.dumps(result, ensure_ascii=False),
             content_type='application/json')
     else:
@@ -1019,7 +1061,6 @@ def funcionarios(request):
 
 @login_required(login_url='/login/')
 def buscarFuncionario(request):
-  #usuario  = Usuario.objects(userid=str(request.user.id))[0]
   if 'id' in request.GET:
     funcionarios = Entidade.objects(id=request.GET['id'])
   elif not 'filtro' in request.GET:
@@ -1055,6 +1096,7 @@ def saidas(request):
       saida.save(commit = True)
       id_gerado = str(saida.id)
       result = {'result': id_gerado}
+      atualizarEstoque('saida', request.POST['produtos'], '0')
     else:
       result = {'result': 0}
     return HttpResponse(json.dumps(result, ensure_ascii=False),

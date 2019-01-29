@@ -131,20 +131,17 @@ class Entidade(EntidadeAbstract):
 	detalhes      = fields.DynamicField(blank = True)
 	def save(self, *args, **kwargs):
 		if self.tipo == 'PRODUTO':
-			print(self.detalhes._id)
 			marca = Marca.objects(nome=self.detalhes.marca)
 			if not marca:
 				marca = Marca()
 				marca.nome = self.detalhes.marca
 				marca.save()
 			historico               = HistoricoProduto()
-			historico._id           = self.detalhes._id
 			historico.nome          = self.nome
 			historico.marca         = self.detalhes.marca
-			historico.preco         = self.detalhes.preco
 			historico.data_cadastro = datetime.datetime.now()
 			historico.fornecedor    = self.detalhes.fornecedor
-			historico .save()
+			historico.save()
 		super(Entidade, self).save(*args, **kwargs)
 
 class Compra(Document):
