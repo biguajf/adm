@@ -25,7 +25,7 @@ urlpatterns = [
     url(r'^buscar/cliente/?$',views.buscarClientes),
     url(r'^adicionar/cliente/?$',views.clientes),
     url(r'^buscar/produto_fornecedor/?$',views.buscarFornecedorProduto),
-    url(r'^buscar/marca/?$',views.buscarMarca),
+    url(r'^produto/buscar/marca/?$',views.buscarMarca),
     url(r'^buscar/historicoProduto/?$',views.buscarHistoricoProduto),
     url(r'^usuario/?$',views.usuario),
     url(r'^adicionar/usuario/?$',views.usuario),
