@@ -128,6 +128,7 @@ class Entidade(EntidadeAbstract):
 	data_cadastro = fields.DateTimeField(default = datetime.datetime.now())
 	tipo_pessoa   = fields.StringField(max_length = 40, blank = True) # PF OU PJ
 	tipo          = fields.StringField(max_length=20)
+	historico      = fields.BooleanField(blank = True)
 	detalhes      = fields.DynamicField(blank = True)
 	def save(self, *args, **kwargs):
 		if self.tipo == 'PRODUTO':
@@ -136,12 +137,13 @@ class Entidade(EntidadeAbstract):
 				marca = Marca()
 				marca.nome = self.detalhes.marca.upper()
 				marca.save()
-			historico               = HistoricoProduto()
-			historico.nome          = self.nome
-			historico.marca         = self.detalhes.marca
-			historico.data_cadastro = datetime.datetime.now()
-			historico.fornecedor    = self.detalhes.fornecedor
-			historico.save()
+			if self.historico:
+				historicoProduto               = HistoricoProduto()
+				historicoProduto.nome          = self.nome
+				historicoProduto.marca         = self.detalhes.marca
+				historicoProduto.data_cadastro = datetime.datetime.now()
+				historicoProduto.fornecedor    = self.detalhes.fornecedor
+				historicoProduto.save()
 		super(Entidade, self).save(*args, **kwargs)
 
 class Compra(Document):
