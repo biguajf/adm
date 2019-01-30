@@ -448,8 +448,16 @@ def produto(request):
       id_produto = request.POST['id_produto']
       if id_produto == '0': #novo
         entidade = Entidade()
+        entidade.historico = True
       else: #editar
         entidade = Entidade.objects(id=id_produto)[0]      
+        historico = HistoricoProduto.objects(Q(nome = request.POST['nome']) & Q(marca=request.POST['marca'])).order_by('-_id')[:1]
+        entidade.historico = False
+        for k in historico[0].fornecedor:
+          for j in produto_fornecedor:
+            if j['nome'] == k['nome']:
+              if k['preco'] != j['preco']:
+                entidade.historico = True
       
       if request.POST['nome'] :
         entidade.nome = request.POST['nome']
@@ -480,13 +488,6 @@ def produto(request):
       if request.POST['fornecedor'] :
         produto.fornecedor = produto_fornecedor
 
-      historico = HistoricoProduto.objects(Q(nome = request.POST['nome']) & Q(marca=request.POST['marca'])).order_by('-_id')[:1]
-      entidade.historico = False
-      for k in historico[0].fornecedor:
-        for j in produto_fornecedor:
-          if j['nome'] == k['nome']:
-            if k['preco'] != j['preco']:
-              entidade.historico = True
 
       entidade.tipo = 'PRODUTO'
       entidade.detalhes = produto
