@@ -446,6 +446,7 @@ def produto(request):
   if request.method == 'POST':
     if context['produto'] == 1 :    
       id_produto = request.POST['id_produto']
+      produto_fornecedor = json.loads(request.POST['fornecedor'])
       if id_produto == '0': #novo
         entidade = Entidade()
         entidade.historico = True
@@ -484,7 +485,6 @@ def produto(request):
       if request.POST['marca'] :
         produto.marca = request.POST['marca']
 
-      produto_fornecedor = json.loads(request.POST['fornecedor'])
       if request.POST['fornecedor'] :
         produto.fornecedor = produto_fornecedor
 
