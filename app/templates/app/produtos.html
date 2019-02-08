@@ -29,6 +29,7 @@
   }
 
   function buscarProduto(){
+    clearDataTable('datatable-produto');
     $.ajax({
       data: {
         filtro : $('#id_get_entidade_produto').val(),
@@ -80,6 +81,7 @@
           texto_html = texto_html + '</tr>';
       }  
       $('#id_itens_produto').html(texto_html);
+      reloadDataTable('datatable-produto');
     }).fail(function(data){
         alertar('Atenção','Não foi possível buscar a lista de produto </br> Tente novamente mais tarde','red','fa fa-warning');                          
     });
@@ -322,16 +324,6 @@ $(function () {
     <div class="page-title">
       <div class="title_left">                          
         <h1>Produto</h1>
-      </div>    
-      <div class="title_right">
-        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-          <div class="input-group">
-            <input type="text" id="id_get_entidade_produto" class="form-control" placeholder="Pesquisar...">
-            <span class="input-group-btn">
-              <button id="produto_btn_ok" class="btn btn-default" type="button" onclick="buscarProduto()">Ok!</button>
-            </span>
-          </div> 
-        </div>
       </div>
     </div>
   </br>
@@ -489,7 +481,7 @@ $(function () {
           </div>
         </div>
         <div class="table-responsive"  id="gradeProduto">
-          <table class="table table-hover"  >
+          <table class="table table-hover" id="datatable-produto">
             <thead>
               <tr name="parse_table">
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>

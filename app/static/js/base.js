@@ -28,6 +28,37 @@ $.ajaxSetup({
     }
 });
 
+//Funções para o DataTable
+function reloadDataTable(id){
+    $('#'+id).DataTable({
+          oLanguage: {
+            "sSearch": "Filtrar",
+            "oPaginate": {
+              "sFirst": "Primeira Página",
+              "sPrevious": "Anterior",
+              "sNext": "Próxima",
+              "sLast": "Ultima Página",
+            },
+            "sInfo": "Página _START_, _END_ produtos de _TOTAL_ totais",
+            "sLengthMenu": "Mostrar _MENU_ produtos"
+          },
+          bPaginate: true,
+          dom: 'Blfrtip',
+          //bLengthChange: true,
+          colReorder: true,
+          buttons: [
+            { extend: 'print', text: 'Imprimir', className: 'btn-default btn-round',exportOptions: { columns: [ 0, ':visible' ]} },
+            { extend: 'colvis', text: 'Ocultar Coluna', columns: ':gt(0)', className: 'btn-default btn-round'},
+          ],
+          "aLengthMenu": [[2, 5, 10, 20, 30, -1], [2, 5, 10, 20, 30, "All"]],
+          "iDisplayLength": 5,
+        }
+      );
+  }
+  function clearDataTable(id){
+    $('#'+id).DataTable().clear().destroy();
+  }
+
 //Funçoes de navegação da pagina
 /*
 var mudou_pagina = true; 
