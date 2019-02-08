@@ -12,6 +12,7 @@
 <script>
   // Funçoes de Cliente
   function buscarUsuario(){
+    clearDataTable('datatable-usuarios');
     $.ajax({
       data: {
         filtro : $('#id_get_usuario').val(),
@@ -22,14 +23,14 @@
       var texto_html = '';
         for (i in data) {
           var n = parseInt(i) + 1;
+          var parametro_edit = "'editarUsuario("+ JSON.stringify(data[i])+")'";
           texto_html = texto_html + '<tr>';
             texto_html = texto_html + '<th scope="row">'+n+'</th>';
-            texto_html = texto_html + '<td>'+data[i].usuario+'</td>';
+            texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+data[i].usuario+'</td>';
             texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
             str = String(data[i].user_permissions);
             res = str.replace(/'/g,"");          
             data[i].user_permissions = res;
-            var parametro_edit = "'editarUsuario("+ JSON.stringify(data[i])+")'";
             texto_html = texto_html + '<td>';
             texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i> ';
             texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirUsuario("'+ data[i]._id['$oid']+'")></i>';
@@ -37,6 +38,7 @@
           texto_html = texto_html + '</tr>';
         }
         $('#id_itens_usuarios').html(texto_html);
+        reloadDataTable('datatable-usuarios');
       }).fail(function(data){
         alertar('Atenção','Não foi possível buscar a lista dos usuarios </br> Tente novamente mais tarde','red','fa fa-warning');
     });
@@ -194,7 +196,7 @@ $(function () {
           <div class="input-group">
             <input type="text" id="id_get_usuario" class="form-control" placeholder="Pesquisar...">
             <span class="input-group-btn">
-              <button id="fornecedor_btn_ok" class="btn btn-default" type="button" id="id_btn_pesquisar" onclick="buscarUsuario()">Ok!</button>
+              <button id="fornecedor_btn_ok" class="btn btn-default" type="button" onclick="buscarUsuario()">Ok!</button>
             </span>
           </div>
         </div>
@@ -337,7 +339,7 @@ $(function () {
             </form>           
           </div>
           <div class="table-responsive"  id="gradeUsuario">
-            <table class="table table-hover"  >
+            <table class="table table-hover" id="datatable-usuarios">
               <thead>
                 <tr name="parse_table">
                   <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>

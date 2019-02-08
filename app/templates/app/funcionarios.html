@@ -11,6 +11,7 @@
 <script>
   // Funçoes de funcionarios
   function buscarFuncionario(){
+    clearDataTable('datatable-funcionarios');
     $.ajax({
       data: {
         filtro : $('#id_get_entidade_funcionario').val(),
@@ -21,6 +22,7 @@
        var texto_html = '';
         for (i in data) { 
             var n = parseInt(i) + 1;             
+            var parametro_edit = "'editarFuncionario("+ JSON.stringify(data[i])+")'";
             texto_html = texto_html + '<tr>';
               texto_html = texto_html + '<th scope="row">'+n+'</th>';
               if (data[i].ativo==true){
@@ -30,15 +32,15 @@
                 texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" /></td>';
               }
               texto_html = texto_html + '<td>'+data[i].tipo_pessoa+'</td>';
-              texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
+              texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].nome +'</td>';
               texto_html = texto_html + '<td>';
-              var parametro_edit = "'editarFuncionario("+ JSON.stringify(data[i])+")'";
                 texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
                 texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirFuncionario("'+ data[i]._id['$oid'] +'")></i>';
               texto_html = texto_html + '</td>';
             texto_html = texto_html + '</tr>';
         }  
         $('#id_itens_funcionario').html(texto_html);
+        reloadDataTable('datatable-funcionarios');
       }).fail(function(data){
         alertar('Atenção','Não foi possível buscar a lista de funcionarios </br> Tente novamente mais tarde','red','fa fa-warning');         
     });      
@@ -308,16 +310,6 @@ $('#id_get_entidade_funcionario').on('keypress', function (e) {
     <div class="page-title">
       <div class="title_left">                          
         <h1>Funcionários</h1>                 
-      </div>    
-      <div class="title_right">
-        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-          <div class="input-group">
-            <input type="text" id="id_get_entidade_funcionario" class="form-control" placeholder="Pesquisar...">
-            <span class="input-group-btn">
-              <button class="btn btn-default" type="button" onclick="buscarFuncionario()" id="funcionarios_btn_ok">Ok!</button>
-            </span>
-          </div> 
-        </div>
       </div>
     </div>
     </br>
@@ -741,7 +733,7 @@ $('#id_get_entidade_funcionario').on('keypress', function (e) {
             </form>
           </div> 
           <div class="table-responsive"  id="gradeFuncionario">
-            <table class="table table-hover"  >
+            <table class="table table-hover" id="datatable-funcionarios">
               <thead>
                 <tr name="parse_table">
                   <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>

@@ -12,6 +12,7 @@
   // Funçoes de Cliente
   
   function buscarCliente(){
+    clearDataTable('datatable-clientes');
     $.ajax({
       data: {
         filtro : $('#id_get_entidade_cliente').val(),
@@ -22,6 +23,7 @@
       var texto_html = '';
       for (i in data) { 
           var n = parseInt(i) + 1;
+          var parametro_edit = "'editarCliente("+ JSON.stringify(data[i])+")'";
           texto_html = texto_html + '<tr>';
             texto_html = texto_html + '<th scope="row">'+n+'</th>';
             if (data[i].ativo==true){
@@ -31,22 +33,21 @@
               texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" /></td>';
             }
             texto_html = texto_html + '<td>'+data[i].tipo_pessoa+'</td>';
-            texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
+            texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].nome +'</td>';
             if (data[i].nome_fantasia){
               texto_html = texto_html + '<td>'+ data[i].nome_fantasia +'</td>';
             }
             else{
               texto_html = texto_html + '<td></td>'; 
             }
-  
             texto_html = texto_html + '<td>';
-            var parametro_edit = "'editarCliente("+ JSON.stringify(data[i])+")'";
-              texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
-              texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirEntidade("'+ data[i]._id['$oid'] +'","Cliente","cliente")></i>';
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
+            texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirEntidade("'+ data[i]._id['$oid'] +'","Cliente","cliente")></i>';
             texto_html = texto_html + '</td>';
           texto_html = texto_html + '</tr>';
       }  
       $('#id_itens_clientes').html(texto_html);
+      reloadDataTable('datatable-clientes');
     }).fail(function(data){
         alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
     });
@@ -296,16 +297,6 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
     <div class="page-title">
       <div class="title_left">                          
         <h1>Clientes</h1>
-      </div>    
-      <div class="title_right">
-        <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
-          <div class="input-group">
-            <input type="text" id="id_get_entidade_cliente" class="form-control" placeholder="Pesquisar...">
-            <span class="input-group-btn">
-              <button id="cliente_btn_ok" class="btn btn-default" type="button" onclick="buscarCliente()">Ok!</button>
-            </span>
-          </div> 
-        </div>
       </div>
     </div>
     </br>
@@ -674,7 +665,7 @@ $('#id_get_entidade_cliente').on('keypress', function (e) {
               </div>
             </form>
           <div class="table-responsive"  id="gradeCliente">
-            <table class="table table-hover"  >
+            <table class="table table-hover" id="datatable-clientes">
               <thead>
                 <tr name="parse_table">
                   <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>

@@ -43,10 +43,12 @@
           var j = 0
           var soma_preco = 0;
           var n = parseInt(i) + 1;
+          var parametro_edit = "'editarProduto("+ JSON.stringify(data[i])+")'";
+          var parametro_hist = "'historicoProduto("+JSON.stringify(data[i].nome)+","+JSON.stringify(data[i].detalhes.marca)+")'";
           texto_html = texto_html + '<tr>';
             texto_html = texto_html + '<th scope="row">'+n+'</th>';
             texto_html = texto_html + '<td>'+ data[i].detalhes.codigo +'</td>';
-            texto_html = texto_html + '<td>'+ data[i].nome +'-'+data[i].detalhes.marca +'</td>';
+            texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].nome +'-'+data[i].detalhes.marca +'</td>';
             if (data[i].detalhes.estoque_atual){
               texto_html = texto_html + '<td>'+ data[i].detalhes.estoque_atual +'</td>';
             }
@@ -72,11 +74,9 @@
               texto_html = texto_html + '<td> - </td>'; 
             }
             texto_html = texto_html + '<td>';
-            var parametro_edit = "'editarProduto("+ JSON.stringify(data[i])+")'";
-            var parametro_hist = "'historicoProduto("+JSON.stringify(data[i].nome)+","+JSON.stringify(data[i].detalhes.marca)+")'";
-              texto_html = texto_html + '<i class="fa fa-history" aria-hidden="true" onclick='+parametro_hist+')></i> ';
-              texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'> </i> ';
-              texto_html = texto_html + '<i class="fa fa-trash" id="trash_'+n+'" aria-hidden="true" onclick= excluirProduto("'+ data[i]._id['$oid'] +'","'+n+'")></i>';
+            texto_html = texto_html + '<i class="fa fa-history" aria-hidden="true" onclick='+parametro_hist+')></i> ';
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'> </i> ';
+            texto_html = texto_html + '<i class="fa fa-trash" id="trash_'+n+'" aria-hidden="true" onclick= excluirProduto("'+ data[i]._id['$oid'] +'","'+n+'")></i>';
             texto_html = texto_html + '</td>';
           texto_html = texto_html + '</tr>';
       }  

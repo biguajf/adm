@@ -23,6 +23,7 @@
       var texto_html = '';
         for (i in data) {
           var n = parseInt(i) + 1;
+          var parametro_edit = "'editarFornecedor("+ JSON.stringify(data[i])+")'";
           texto_html = texto_html + '<tr>';
             texto_html = texto_html + '<th scope="row">'+n+'</th>';
             if (data[i].ativo==true){
@@ -32,7 +33,7 @@
               texto_html = texto_html + '<td align="center"><input onclick="return false;" type="checkbox" /></td>';
             }
             texto_html = texto_html + '<td>'+data[i].tipo_pessoa+'</td>';
-            texto_html = texto_html + '<td>'+ data[i].nome +'</td>';
+            texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].nome +'</td>';
             if (data[i].nome_fantasia){
               texto_html = texto_html + '<td>'+ data[i].nome_fantasia +'</td>';
             }
@@ -40,9 +41,8 @@
               texto_html = texto_html + '<td></td>'; 
             }           
             texto_html = texto_html + '<td>';
-            var parametro_edit = "'editarFornecedor("+ JSON.stringify(data[i])+")'";
-                texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i> ';
-                texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirEntidade("'+ data[i]._id['$oid']+'","Fornecedor","fornecedor")></i>';
+            texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i> ';
+            texto_html = texto_html + '<i class="fa fa-trash" aria-hidden="true" onclick= excluirEntidade("'+ data[i]._id['$oid']+'","Fornecedor","fornecedor")></i>';
             texto_html = texto_html + '</td>';
           texto_html = texto_html + '</tr>';
         }
