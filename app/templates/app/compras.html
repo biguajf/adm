@@ -233,8 +233,10 @@ function inserirProduto(){
   txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
   txt = txt + '</tr>';
   $("#compra_id_body_produtos").append(txt);
-  //total_geral = parseFloat(total_geral);
+  $('#compra_id_quantidade').val('');
+  $('#compra_id_preco').val('');
   $("#compra_id_total").val(formatarValor(total_geral));
+  $('#compra_id_produto').val('').trigger('change');
 }
 
 function excluirProduto(id){
@@ -290,7 +292,13 @@ $(function () {
       liberarProduto();
       val = $("#produto_fornecedor option:selected").attr("value");
       carregarProduto(val);
-    }); 
+    });
+    
+    $('#cliente_id_data_cadastro').datetimepicker({           
+        format: 'DD/MM/YYYY',
+        daysOfWeekDisabled: [0, 6],
+        locale: 'pt-br'
+    });
 
 });
 $('#id_get_compra').on('keypress', function (e) {
@@ -330,7 +338,7 @@ $('#id_get_compra').on('keypress', function (e) {
               <div class="col-md-3 col-sm-3 col-cx-6">
                 <label class="control-label">Data de cadastro</label></br>
                 <div class='input-group date' id='cadastro'>
-                  <input type='text' class="form-control" name="cadastro" id="cliente_id_data_cadastro" readonly/>
+                  <input type='text' class="form-control" name="cadastro" id="cliente_id_data_cadastro"/>
                   <span class="input-group-addon">
                     <span class="glyphicon glyphicon-calendar"></span>
                   </span>
