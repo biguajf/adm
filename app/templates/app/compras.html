@@ -71,6 +71,7 @@ function adicionarCompra(){
         id  : $("#id_Compra").val(),
         fornecedor : $("#produto_fornecedor").val(),
         total      : $("#compra_id_total").val(),
+        data_cadastro :  moment($('#cadastro').data("DateTimePicker").date()).format('DD/MM/YYYY'),
         produtos   : produto_array
       },
       type: 'POST',
@@ -78,7 +79,7 @@ function adicionarCompra(){
       }).success(function(data){
         $('#spinner_modal').modal('hide');
         alertar('Sucesso','Compra cadastrada com sucesso','green','fa fa-sucess');
-        $("#cliente_btn_ok").click();
+        buscarCompra();
         mostraGradeCompra();
       }).fail(function(data){
         $('#spinner_modal').modal('hide');
@@ -293,8 +294,8 @@ $(function () {
       val = $("#produto_fornecedor option:selected").attr("value");
       carregarProduto(val);
     });
-    
-    $('#cliente_id_data_cadastro').datetimepicker({           
+
+    $('#cadastro').datetimepicker({           
         format: 'DD/MM/YYYY',
         daysOfWeekDisabled: [0, 6],
         locale: 'pt-br'

@@ -888,7 +888,9 @@ def compras(request):
       fornecedor_produto   = Entidade.objects(id=request.POST['fornecedor'])[0]
       compra.fornecedor    = fornecedor_produto.nome
       compra.fornecedor_id = request.POST['fornecedor']
-      compra.total         = request.POST['total']    
+      compra.total         = request.POST['total']
+      if request.POST['data_cadastro'] :
+        compra.data_cadastro = datetime.datetime.strptime(request.POST['data_cadastro'], "%d/%m/%Y").date()
       compra.produtos      = json.loads(request.POST['produtos'])
       
       compra.save(commit = True)
