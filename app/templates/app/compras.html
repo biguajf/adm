@@ -143,6 +143,7 @@ function clearFormProduto(){
   $('#id_Compra').val(0);
   $('#cliente_id_data_cadastro').val('')
   $('#produto_fornecedor').val('').trigger('change');
+  $('#compra_id_produto').val('0').trigger('change');
   $('#compra_id_preco').val('');
   $('#compra_id_produto').val('');
   $('#compra_id_unidade').val('');
@@ -192,9 +193,9 @@ function carregarProduto(id){
     type: 'GET',
     url:'/buscar/produto_fornecedor'
   }).success(function(data){
-    $("#compra_id_produto").html("<option value=''>--</option>");
+    $("#compra_id_produto").html("<option value='0'>--</option>");
     var txt = '';
-    txt = txt+ '<optgroup label="Compra">'   
+    txt = txt+ '<optgroup>'   
     for (i in data){        
       txt = txt + "<option value='"+JSON.stringify(data[i])+"'>"+data[i].nome+"  - "+data[i].marca+"</option>";
     }         
@@ -237,7 +238,7 @@ function inserirProduto(){
   $('#compra_id_quantidade').val('');
   $('#compra_id_preco').val('');
   $("#compra_id_total").val(formatarValor(total_geral));
-  $('#compra_id_produto').val('').trigger('change');
+  $('#compra_id_produto').val('0').trigger('change');
 }
 
 function excluirProduto(id){
@@ -490,6 +491,7 @@ $('#id_get_compra').on('keypress', function (e) {
   
 <script type="text/javascript">
   $(document).ready(function() {
+    $('#compra_id_produto ').select2();
     carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
     buscarCompra();
   });
