@@ -12,7 +12,6 @@
 
 -->
 <script>
-
 function buscarSaida(){
   clearDataTable('datatable-saidas');
   $.ajax({
@@ -81,7 +80,7 @@ function adicionarSaida(){
       }).success(function(data){
         $('#spinner_modal').modal('hide');
         alertar('Sucesso','Compra cadastrada com sucesso','green','fa fa-sucess');
-        $("#cliente_btn_ok").click();
+        buscarSaida();
         mostraGradeSaida();
       }).fail(function(data){
         $('#spinner_modal').modal('hide');
@@ -108,7 +107,7 @@ function excluirSaida(id){
                     url:'/excluir/saida/'
                     }).success(function(data){
                       $('#spinner_modal').modal('hide');
-                      $("#cliente_btn_ok").click();
+                      buscarSaida();
                     }).fail(function(data){
                         $('#spinner_modal').modal('hide');
                         alertar('Atenção','Não foi possível excluir este usuario </br> Tente novamente mais tarde','red','fa fa-warning');
@@ -148,6 +147,7 @@ function clearFormProduto(){
   $('#cliente_id_data_cadastro').val('')
   $('#produto_fornecedor').val('').trigger('change');
   $('#saida_cliente').val('').trigger('change');
+  $('#compra_id_produto').val('0').trigger('change');
   $('#compra_id_preco').val('');
   $('#compra_id_produto').val('');
   $('#compra_id_unidade').val('');
@@ -155,7 +155,7 @@ function clearFormProduto(){
   $('#compra_id_codigo').val('');
   $('#compra_id_total').val('');
   $('#compra_id_body_produtos').html('');
-    $("#compra_id_produto").attr("disabled", true);
+  $("#compra_id_produto").attr("disabled", true);
   $("#compra_id_quantidade").attr("disabled", true);
   $("#compra_id_preco").attr("disabled", true);
 }
@@ -197,7 +197,7 @@ function carregarProduto(id){
     type: 'GET',
     url:'/buscar/produto_fornecedor'
   }).success(function(data){
-    $("#compra_id_produto").html("<option value=''>--</option>");
+    $("#compra_id_produto").html("<option value='0'>--</option>");
     var txt = '';
     txt = txt+ '<optgroup label="Compra">'   
     for (i in data){        
@@ -241,7 +241,10 @@ function inserirProduto(){
   txt = txt + '<td style="text-align: right;" id="id_excluir_produto_extr_'+n+'"><i class="fa fa-trash" aria-hidden="true" onclick= excluirProduto("'+n+'")></i></td>';
   txt = txt + '</tr>';
   $("#compra_id_body_produtos").append(txt);
+  $('#compra_id_quantidade').val('');
+  $('#compra_id_preco').val('');
   $("#compra_id_total").val(formatarValor(total_geral));
+  $('#compra_id_produto').val('0').trigger('change');
 }
 
 function excluirProduto(id){
@@ -499,6 +502,7 @@ $('#id_get_compra').on('keypress', function (e) {
   
 <script type="text/javascript">
   $(document).ready(function() {
+    $('#compra_id_produto ').select2();
     carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
     carregarEntidade(['saida_cliente'],'cliente','Cliente',true);
     buscarSaida();

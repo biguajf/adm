@@ -42,19 +42,15 @@ def atualizarEstoque(tipo, produto, fornecedor):
         n+=1
     return
   elif tipo == 'saida':
-    fornecedor_produto = json.loads(produto)
+    fornecedor_produto = produto
     for i in fornecedor_produto:
       produto_split = i['produto']
       a,b = produto_split.split('  - ')
       produto_saida = Entidade.objects(Q(tipo = 'PRODUTO') & Q(nome=a) & Q(detalhes__marca=b))[0]
-      m=0
-      for k in produto_saida.detalhes.fornecedor:
-        if k['nome'] == i['fornecedor']:
-          detalhes = produto_saida.detalhes
-          detalhes['estoque_atual'] = str(float(detalhes['estoque_atual']) - float(i['quantidade']))
-          produto_saida.detalhes = detalhes
-          produto_saida.update(detalhes = detalhes)
-        m+=1
+      detalhes = produto_saida.detalhes
+      detalhes['estoque_atual'] = str(float(detalhes['estoque_atual']) - float(i['quantidade']))
+      produto_saida.detalhes = detalhes
+      produto_saida.update(detalhes = detalhes)
     return
   else:
     return
@@ -1093,21 +1089,31 @@ def saidas(request):
   if request.method == 'POST':
     if context['saida'] == 1 :  
       id_saida = request.POST['id']
+      produtos = json.loads(request.POST['produtos'])
+      produtos_array = []
       if id_saida == '0': #novo
         saida = Saida()
+        produtos_array = produtos
       else: #editar
-        saida = Saida.objects(id=id_entidade)[0]
+        saida = Saida.objects(id=id_saida)[0]
+        for j in produtos:
+          flag = 0
+          for i in saida.produtos:
+            if i['produto'] == j['produto']:
+              flag = 1
+          if flag == 0:
+            produtos_array.append(j)           
       #
       saida_cliente       = Entidade.objects(id=request.POST['cliente'])[0]
       saida.cliente       = saida_cliente.nome
       saida.cliente_id    = request.POST['cliente']
       saida.total         = request.POST['total']    
-      saida.produtos      = json.loads(request.POST['produtos'])
+      saida.produtos      = produtos
       
       saida.save(commit = True)
       id_gerado = str(saida.id)
       result = {'result': id_gerado}
-      atualizarEstoque('saida', request.POST['produtos'], '0')
+      atualizarEstoque('saida', produtos_array, '0')
     else:
       result = {'result': 0}
     return HttpResponse(json.dumps(result, ensure_ascii=False),
