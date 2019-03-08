@@ -301,6 +301,18 @@ $(function () {
         daysOfWeekDisabled: [0, 6],
         locale: 'pt-br'
     });
+    $('#max-date').datetimepicker({           
+        useCurrent: false,
+        format: 'DD/MM/YYYY',
+        daysOfWeekDisabled: [0, 6],
+        locale: 'pt-br'
+    });
+    $('#min-date').datetimepicker({
+        useCurrent: false,       
+        format: 'DD/MM/YYYY',
+        daysOfWeekDisabled: [0, 6],
+        locale: 'pt-br'
+    });
 
 });
 $('#id_get_compra').on('keypress', function (e) {
@@ -466,6 +478,24 @@ $('#id_get_compra').on('keypress', function (e) {
         </div>
         <div class="table-responsive"  id="gradeCliente">
           <table class="table table-hover" id="datatable-compras">
+            <div class="col-md-3 col-sm-3 col-xs-12">
+              <label class="control-label">Data Início</label></br>
+              <div class='input-group date form-group' id='inicio_date'>
+                <input type='text' class="form-control date-range-filter" id="min-date"/>
+                <span class="input-group-addon">
+                  <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-3 col-xs-12">
+              <label class="control-label">Data Fim</label></br>
+              <div class='input-group date form-group' id='fim_date'>
+                <input type='text' class="form-control date-range-filter" id="max-date"/>
+                <span class="input-group-addon">
+                  <span class="glyphicon glyphicon-calendar"></span>
+                </span>
+              </div>
+            </div>
             <thead>
               <tr name="parse_table">
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
@@ -477,6 +507,12 @@ $('#id_get_compra').on('keypress', function (e) {
             </thead>      
             <tbody id="id_itens_compras">
             </tbody>
+            <tfoot>
+              <tr>
+                  <th name="dataTable_total" val=3 colspan="3" style="text-align:right"></th>
+                  <th></th>
+              </tr>
+            </tfoot>
           </table>
         </div>
         </div> 

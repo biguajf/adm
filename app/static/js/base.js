@@ -30,30 +30,109 @@ $.ajaxSetup({
 
 //Funções para o DataTable
 function reloadDataTable(id){
-    $('#'+id).DataTable({
-          oLanguage: {
-            "sSearch": "Filtrar",
-            "oPaginate": {
-              "sFirst": "Primeira Página",
-              "sPrevious": "Anterior",
-              "sNext": "Próxima",
-              "sLast": "Ultima Página",
-            },
-            "sInfo": "Página _START_, _END_ produtos de _TOTAL_ totais",
-            "sLengthMenu": "Mostrar _MENU_ produtos"
-          },
-          bPaginate: true,
-          dom: 'Blfrtip',
-          //bLengthChange: true,
-          colReorder: true,
-          buttons: [
-            { extend: 'print', text: 'Imprimir', className: 'btn-default btn-round',exportOptions: { columns: [ 0, ':visible' ]} },
-            { extend: 'colvis', text: 'Ocultar Coluna', columns: ':gt(0)', className: 'btn-default btn-round'},
-          ],
-          "aLengthMenu": [[2, 5, 10, 20, 30, -1], [2, 5, 10, 20, 30, "All"]],
-          "iDisplayLength": 5,
+    var colum_sum = $('[name="dataTable_total"]').attr('val');
+  console.log(colum_sum);
+    $.fn.dataTableExt.afnFiltering.push(
+    function( oSettings, aData, iDataIndex ) {
+        if(document.getElementById('min-date')){
+        var iFini = document.getElementById('min-date').value;
+      }else{
+        var iFini = ''
+      }
+      if(document.getElementById('max-date')){
+        var iFfin = document.getElementById('max-date').value;
+      }else{
+        var iFfin = ''
+      }
+        var iStartDateCol = 1;
+        var iEndDateCol = 1;
+ 
+        iFini=iFini.substring(6,10) + iFini.substring(3,5)+ iFini.substring(0,2);
+        iFfin=iFfin.substring(6,10) + iFfin.substring(3,5)+ iFfin.substring(0,2);
+ 
+        var datofini=aData[iStartDateCol].substring(6,10) + aData[iStartDateCol].substring(3,5)+ aData[iStartDateCol].substring(0,2);
+        var datoffin=aData[iEndDateCol].substring(6,10) + aData[iEndDateCol].substring(3,5)+ aData[iEndDateCol].substring(0,2);
+ 
+        if ( iFini === "" && iFfin === "" )
+        {
+            return true;
         }
-      );
+        else if ( iFini <= datofini && iFfin === "")
+        {
+            return true;
+        }
+        else if ( iFfin >= datoffin && iFini === "")
+        {
+            return true;
+        }
+        else if (iFini <= datofini && iFfin >= datoffin)
+        {
+            return true;
+        }
+        return false;
+    }
+  );
+
+  $('.date-range-filter').on('dp.change', function(e){
+    table.draw();
+  });
+
+  table =  $('#'+id).DataTable({
+        oLanguage: {
+          "sSearch": "Pesquisar",
+          "oPaginate": {
+            "sFirst": "Primeira Página",
+            "sPrevious": "Anterior",
+            "sNext": "Próxima",
+            "sLast": "Ultima Página",
+          },
+          "sInfo": "Página _START_, _END_ produtos de _TOTAL_ totais",
+          "sLengthMenu": "Mostrar _MENU_ produtos"
+        },
+        bPaginate: true,
+        dom: 'Blfrtip',
+        colReorder: true,
+        buttons: [
+          { extend: 'print', footer: true, text: 'Imprimir', className: 'btn-default btn-round',exportOptions: { columns: [ 0, ':visible' ]} },
+          { extend: 'colvis', text: 'Ocultar Coluna', columns: ':gt(0)', className: 'btn-default btn-round'},
+        ],
+        "aLengthMenu": [[2, 5, 10, 20, 30, -1], [2, 5, 10, 20, 30, "All"]],
+        "iDisplayLength": 5,
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api(), data;
+ 
+            // Remove the formatting to get integer data for summation
+            var intVal = function ( i ) {
+                return typeof i === 'string' ?
+                    i.replace(/[\R$,\.]/g, '')*1 :
+                    typeof i === 'number' ?
+                        i : 0;
+            };
+ 
+            // Total over all pages
+            total = api
+                .column( colum_sum )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+ 
+            // Total over this page
+            pageTotal = api
+                .column( colum_sum, { page: 'current'} )
+                .data()
+                .reduce( function (a, b) {
+                    return intVal(a) + intVal(b);
+                }, 0 );
+ 
+            // Update footer
+            $( api.column( colum_sum ).footer() ).html(
+                'Total: R$'+ formatarValor(parseFloat(pageTotal/100))
+            );
+            // com total pagia + total geral-> 'R$'+ formatarValor(parseFloat(pageTotal/100)) +' ( R$'+formatarValor(parseFloat(total/100)) +' total)'
+        }
+      }
+    );
   }
   function clearDataTable(id){
     $('#'+id).DataTable().clear().destroy();
