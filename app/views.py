@@ -879,7 +879,7 @@ def compras(request):
       if id_compra == '0': #novo
         compra = Compra()
       else: #editar
-        compra = Compra.objects(id=id_entidade)[0]
+        compra = Compra.objects(id=id_compra)[0]
 
       fornecedor_produto   = Entidade.objects(id=request.POST['fornecedor'])[0]
       compra.fornecedor    = fornecedor_produto.nome
