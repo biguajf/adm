@@ -1108,7 +1108,7 @@ def saidas(request):
       saida.cliente       = saida_cliente.nome
       saida.cliente_id    = request.POST['cliente']
       saida_funcionario   = Entidade.objects(id=request.POST['funcionario'])[0]
-      saida.funcionario   = saida_cliente.nome
+      saida.funcionario   = saida_funcionario.nome
       saida.funcionario_id= request.POST['funcionario']
       saida.total         = request.POST['total']    
       saida.produtos      = produtos
