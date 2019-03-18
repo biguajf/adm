@@ -29,6 +29,7 @@ function buscarSaida(){
           texto_html = texto_html + '<th scope="row">'+n+'</th>';
           texto_html = texto_html + '<td>'+ moment(data[i].data_cadastro['$date']).format('DD/MM/YYYY')+'</td>';
           texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].cliente +'</td>';
+          texto_html = texto_html + '<td ondblclick='+ parametro_edit +'>'+ data[i].funcionario +'</td>';
           texto_html = texto_html + '<td>R$ '+formatarValor(data[i].total)+'</td>';
           texto_html = texto_html + '<td>';
           texto_html = texto_html + '<i class="fa fa-pencil-square-o" aria-hidden="true" onclick='+ parametro_edit +'></i>';
@@ -72,6 +73,7 @@ function adicionarSaida(){
       data: {
         id  : $("#id_Compra").val(),
         cliente    : $("#saida_cliente").val(),
+        funcionario: $("#saida_funcionario").val(),
         total      : $("#compra_id_total").val(),
         produtos   : produto_array
       },
@@ -121,6 +123,7 @@ function editarSaida(data){
   $('#cliente_id_data_cadastro').val(moment(data.data_cadastro['$date']).format('DD/MM/YYYY'))
   $('#produto_fornecedor').val(data.fornecedor_id).trigger('change');
   $('#saida_cliente').val(data.cliente_id).trigger('change');
+  $('#saida_funcionario').val(data.funcionario_id).trigger('change');
   var txt = '';
   var n = 1;
   for (i in data.produtos){
@@ -147,6 +150,7 @@ function clearFormProduto(){
   $('#cliente_id_data_cadastro').val('')
   $('#produto_fornecedor').val('').trigger('change');
   $('#saida_cliente').val('').trigger('change');
+  $('#saida_funcionario').val('').trigger('change');
   $('#compra_id_produto').val('0').trigger('change');
   $('#compra_id_preco').val('');
   $('#compra_id_produto').val('');
@@ -358,17 +362,27 @@ $('#id_get_compra').on('keypress', function (e) {
                   </span>
                 </div>
               </div>
-              <div class="col-md-5 col-sm-5 col-xs-12">
+              <div class="col-md-4 col-sm-4 col-xs-12">
                 <label ></span>Cliente</label>
                 <div class="input-group row-fluid">              
                   <span class="input-group-addon">
-                      <i class="fa fa-truck"></i>
+                      <i class="fa fa-user"></i>
                   </span>
                   <select class="selectpicker form-control" data-live-search="true" id="saida_cliente" style="width: 100%;">
                     </select>  
                 </div>
               </div>
-              <div class="col-md-5 col-sm-5 col-xs-12">
+              <div class="col-md-3 col-sm-3 col-xs-12">
+                <label ></span>Funcionario</label>
+                <div class="input-group row-fluid">              
+                  <span class="input-group-addon">
+                      <i class="fa fa-user"></i>
+                  </span>
+                  <select class="selectpicker form-control" data-live-search="true" id="saida_funcionario" style="width: 100%;">
+                    </select>  
+                </div>
+              </div>
+              <div class="col-md-3 col-sm-3 col-xs-12">
                 <label for="fornecedorProduto"></span>Fornecedor</label>
                 <div class="input-group row-fluid">              
                   <span class="input-group-addon">
@@ -511,7 +525,8 @@ $('#id_get_compra').on('keypress', function (e) {
               <tr name="parse_table">
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 2%;" aria-sort="ascending">#</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;" aria-sort="ascending">Data</th>
-                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 70%;" aria-sort="ascending">Cliente</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 35%;" aria-sort="ascending">Cliente</th>
+                <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 35%;" aria-sort="ascending">Funcionário</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 18%;" aria-sort="ascending">Preço Total</th>
                 <th class="sorting" tabindex="0" aria-controls="datatable-buttons" style="width: 5%;">Ações</th>
               </tr>
@@ -520,7 +535,7 @@ $('#id_get_compra').on('keypress', function (e) {
             </tbody>
             <tfoot>
               <tr>
-                  <th name="dataTable_total" val=3 colspan="4" style="text-align:right">Total:</th>
+                  <th name="dataTable_total" val=4 colspan="4" style="text-align:right">Total:</th>
                   <th></th>
               </tr>
             </tfoot>
@@ -541,6 +556,8 @@ $('#id_get_compra').on('keypress', function (e) {
     $('#compra_id_produto ').select2();
     carregarEntidade(['produto_fornecedor'],'fornecedor','Fornecedor',true);
     carregarEntidade(['saida_cliente'],'cliente','Cliente',true);
+    carregarEntidade(['saida_funcionario'],'funcionario','Funcionario',true);
+    
     buscarSaida();
   });
 </script>

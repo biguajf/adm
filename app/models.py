@@ -159,6 +159,8 @@ class Saida(Document):
 	fornecedor    = fields.StringField(max_length=200,blank = True)
 	cliente_id    = fields.StringField(max_length=200,blank = True)
 	cliente       = fields.StringField(max_length=200,blank = True)
+	funcionario_id= fields.StringField(max_length=200,blank = True)
+	funcionario   = fields.StringField(max_length=200,blank = True)
 	total         = fields.StringField(max_length=200,blank = True)
 	produtos      = fields.DynamicField()
 				
