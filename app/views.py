@@ -471,7 +471,7 @@ def produto(request):
       
       if request.POST['unidade'] :
         produto.unidade = request.POST['unidade']
-        
+
       if request.POST['estoque_minimo'] :
         produto.estoque_minimo = request.POST['estoque_minimo']
 
@@ -1130,6 +1130,10 @@ def buscarSaida(request):
   if request.method == 'GET':
     if 'id' in request.GET:
       saida = Saida.objects(id=request.GET['id'])
+    elif 'mes' in request.GET:
+      mes = datetime.datetime.strptime(request.GET['mes'], "%d/%m/%Y")
+      data_final = mes.replace(month=mes.month+1)
+      saida = Saida.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final))
     elif not 'filtro' in request.GET:
       saida = Saida.objects()
     else:
