@@ -471,7 +471,7 @@ def produto(request):
       
       if request.POST['unidade'] :
         produto.unidade = request.POST['unidade']
-
+        
       if request.POST['estoque_minimo'] :
         produto.estoque_minimo = request.POST['estoque_minimo']
 
