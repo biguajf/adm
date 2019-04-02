@@ -55,32 +55,70 @@
       buscarSaida();
   });
 
+  $('#reportranger').daterangepicker({
+   singleDatePicker: true,
+   showDropdowns: true,
+   format: 'MM/YYYY'
+     }).on('showCalendar.daterangepicker', function (ev, picker) {
+      picker.container.find(".calendar-table tbody").hide();
+      picker.container.find(".calendar-table thead tr:eq(1)").hide();
+      var month = parseInt(picker.container.find(".calendar-table thead tr:eq(0) select:eq(0) :selected").val()) + 1;
+      var year = parseInt(picker.container.find(".calendar-table thead tr:eq(0) select:eq(1) :selected").val());
+      var txt_date = picker.container.find(".calendar-table thead tr:eq(0) select:eq(0) :selected").text() + '/' + year;
+      $('#reportranger').data('daterangepicker').setStartDate('01/'+ month + '/' + year);
+      $('#resumo_span_compra').html(txt_date);
+      buscarCompra();
+  });
+
   function buscarSaida(){
     var month = moment($('#reportranget').data('daterangepicker').startDate._d).format('DD/MM/YYYY');
-  $.ajax({
-    data: { 
-      mes : month, 
-    },
-    type: 'GET',
-    url:'/buscar/saida/'
-  }).success(function(data){
-    var preco_total  = 0.0;
-    var txt_resume = '';
-    for (i in data) {
-      var valor_saida = data[i].total.replace(".","");
-      preco_total = parseFloat(preco_total) + parseFloat(valor_saida.replace(",","."));
-    } 
-    txt_resume = '<h2><small>R$</small><strong> '+ formatarValor(preco_total) + '</strong></h2>';
-    $('#resumo_saida').html(txt_resume);
-  }).fail(function(data){
-      alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
-  });
-}
+    $.ajax({
+      data: { 
+        mes : month, 
+      },
+      type: 'GET',
+      url:'/buscar/saida/'
+      }).success(function(data){
+        var preco_total  = 0.0;
+        var txt_resume = '';
+        for (i in data) {
+          var valor_saida = data[i].total.replace(".","");
+          preco_total = parseFloat(preco_total) + parseFloat(valor_saida.replace(",","."));
+        } 
+        txt_resume = '<h2><small>R$</small><strong> '+ formatarValor(preco_total) + '</strong></h2>';
+        $('#resumo_saida').html(txt_resume);
+      }).fail(function(data){
+          alertar('Atenção','Não foi possível buscar a lista de clientes </br> Tente novamente mais tarde','red','fa fa-warning');                          
+      });
+  }
+  function buscarCompra(){
+    var month = moment($('#reportranger').data('daterangepicker').startDate._d).format('DD/MM/YYYY');
+    $.ajax({
+      data: {
+        mes : month,
+        },
+        type: 'GET',
+      url:'/buscar/compra/'
+    }).success(function(data){
+      var preco_total  = 0.0;
+      var txt_resume = '';
+      for (i in data) {
+        var valor_saida = data[i].total.replace(".","");
+        preco_total = parseFloat(preco_total) + parseFloat(valor_saida.replace(",","."));
+      } 
+      txt_resume = '<h2><small>R$</small><strong> '+ formatarValor(preco_total) + '</strong></h2>';
+      $('#resumo_compra').html(txt_resume);
+    }).fail(function(data){
+        alertar('Atenção','Não foi possível buscar a lista de compras </br> Tente novamente mais tarde','red','fa fa-warning');                          
+    });
+  }
 
 $(function () {
-  buscarSaida();
+   buscarSaida();
+  buscarCompra();
   buscarProduto();
   $('#reportranget').click();
+  $('#reportranger').click();
   $('.daterangepicker').hide();
  });
 
@@ -98,6 +136,17 @@ $(function () {
           <div id="reportranget">
             <i class="glyphicon glyphicon-calendar fa fa-calendar" id="id_month"></i>
             <span id="resumo_span"></span> <b class="caret"></b>
+          </div>
+        </span>
+      </div>
+      <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count" >
+        <span class="count_top" ><i class="fa fa-cubes"></i> Compras
+        </span>
+        <div class="count" id='resumo_compra'></div>
+        <span class="count_bottom">
+          <div id="reportranger">
+            <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+            <span id="resumo_span_compra"></span> <b class="caret"></b>
           </div>
         </span>
       </div>
