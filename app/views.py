@@ -1132,7 +1132,10 @@ def buscarSaida(request):
       saida = Saida.objects(id=request.GET['id'])
     elif 'mes' in request.GET:
       mes = datetime.datetime.strptime(request.GET['mes'], "%d/%m/%Y")
-      data_final = mes.replace(month=mes.month+1)
+      if mes.month < 12:
+        data_final = mes.replace(month=mes.month+1)
+      else:
+        data_final = mes.replace(month=1, year=mes.year+1)
       saida = Saida.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final))
     elif not 'filtro' in request.GET:
       saida = Saida.objects()

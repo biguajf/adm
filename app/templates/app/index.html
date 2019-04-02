@@ -50,7 +50,9 @@
       picker.container.find(".calendar-table thead tr:eq(1)").hide();
       var month = parseInt(picker.container.find(".calendar-table thead tr:eq(0) select:eq(0) :selected").val()) + 1;
       var year = parseInt(picker.container.find(".calendar-table thead tr:eq(0) select:eq(1) :selected").val());
+      var txt_date = picker.container.find(".calendar-table thead tr:eq(0) select:eq(0) :selected").text() + '/' + year;
       $('#reportranget').data('daterangepicker').setStartDate('01/'+ month + '/' + year);
+      $('#resumo_span').html(txt_date);
       buscarSaida();
   });
 
@@ -79,6 +81,8 @@
 $(function () {
   buscarSaida();
   buscarProduto();
+  $('#reportranget').click();
+  $('.daterangepicker').hide();
  });
 
 });
@@ -87,15 +91,15 @@ $(function () {
   <div class="right_col" role="main">
     <!-- top tiles -->
     <div class="row tile_count" id="id_resumo">
-      
       <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count" >
         <span class="count_top" ><i class="fa fa-cubes"></i> Saídas
-          <div id="reportranget" class="pull-right">
-            <i class="glyphicon glyphicon-calendar fa fa-calendar" id="id_month"></i>
-          </div>
         </span>
         <div class="count" id='resumo_saida'></div>
         <span class="count_bottom">
+          <div id="reportranget">
+            <i class="glyphicon glyphicon-calendar fa fa-calendar" id="id_month"></i>
+            <span id="resumo_span"></span> <b class="caret"></b>
+          </div>
         </span>
       </div>
       <!-- 
