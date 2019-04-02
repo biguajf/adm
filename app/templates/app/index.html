@@ -33,7 +33,6 @@
       }
       txt_resume = '<div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count"><span class="count_top"><i class="fa fa-cubes"></i> Almoxarifado</span><div class="count"><h2><small>R$</small><strong> '+ formatarValor(preco_total) + '</strong></h2></div></div>';
       $('#id_resumo').append(txt_resume);
-      //console.log(formatarValor(preco_total));
 
     }).fail(function(data){
         alertar('Atenção','Não foi possível buscar a lista de produto </br> Tente novamente mais tarde','red','fa fa-warning');                          
@@ -68,8 +67,8 @@
     var preco_total  = 0.0;
     var txt_resume = '';
     for (i in data) {
-      var valor_saida = data[i].total.replace(".","")
-      preco_total = preco_total + parseFloat(valor_saida);
+      var valor_saida = data[i].total.replace(".","");
+      preco_total = parseFloat(preco_total) + parseFloat(valor_saida.replace(",","."));
     } 
     txt_resume = '<h2><small>R$</small><strong> '+ formatarValor(preco_total) + '</strong></h2>';
     $('#resumo_saida').html(txt_resume);
