@@ -914,7 +914,7 @@ def buscarCompra(request):
         data_final = mes.replace(month=mes.month+1)
       else:
         data_final = mes.replace(month=1, year=mes.year+1)
-      compra = Compra.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final))
+      compra = Compra.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final)).order_by('data_cadastro','total')
     elif not 'filtro' in request.GET:
       compra = Compra.objects()
     else:
@@ -1143,7 +1143,7 @@ def buscarSaida(request):
         data_final = mes.replace(month=mes.month+1)
       else:
         data_final = mes.replace(month=1, year=mes.year+1)
-      saida = Saida.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final))
+      saida = Saida.objects(Q(data_cadastro__gte=mes) & Q(data_cadastro__lt=data_final)).order_by('data_cadastro','total')
     elif not 'filtro' in request.GET:
       saida = Saida.objects()
     else:

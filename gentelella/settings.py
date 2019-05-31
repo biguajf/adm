@@ -20,12 +20,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '8*md2t)o**67@*yhc(d=f@j95kl(dnf^rmm4s00$-mh_vurb2b'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.51', 'localhost', '127.0.0.1','lumaxdata.pythonanywhere.com']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -94,15 +94,10 @@ DATABASES = {
 # MongoDB settings
 MONGODB_DATABASES = {
     "default": {
-        #"name": 'lumax_data',
-        #"host":"ds115283.mlab.com:15283",
-        #"username": 'lumax',
-        #"password": '_#l1m2x#_',
-        #"host":"mongodb://cloud:ds033103.mlab.com:33103,ds033103.mlab.com:33103,ds033103.mlab.com:33103",
-        "name": 'lumaxdata',
-        "host":"ds033103.mlab.com:33103",
-        "username": 'lumaxdata',
-        "password": 'lumaxdata123',
+        "name": '',
+        "host":"",
+        "username": '',
+        "password": '',
         
         "tz_aware": False, # if you using timezones in django (USE_TZ = True)
     },
