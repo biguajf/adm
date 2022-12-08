@@ -1,4 +1,4 @@
-certifi==2018.11.29
+certifi==2022.12.7
 dj-static==0.0.6
 Django==2.1.2
 django-filter==2.0.0
